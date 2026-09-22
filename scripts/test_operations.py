@@ -56,6 +56,7 @@ class OperationTests(unittest.TestCase):
     def test_report_stale_task_and_48_hour_escalation(self):
         path = self.root / "tasks/TASK-001.md"
         task, body = read_front(path)
+        task["status"] = "review"
         task["created"] = stamp(now() - timedelta(days=4))
         task["updated"] = stamp(now() - timedelta(days=2))
         write_front(path, task, body)
@@ -67,7 +68,7 @@ class OperationTests(unittest.TestCase):
     def test_dry_run_reads_context_without_spending(self):
         self.assertEqual(run("codex", "execute", self.root, dry_run=True), 0)
         log = next((self.root / "logs/runs").glob("codex-*.md")).read_text(encoding="utf-8")
-        for name in ("current-goal.md", "metrics.md", "agents/codex.md", "LOW-COMPUTE", "TASK-001"):
+        for name in ("current-goal.md", "metrics.md", "agents/codex.md", "LOW-COMPUTE", "TASK-004"):
             self.assertIn(name, log)
         with database(self.root) as conn:
             self.assertEqual(conn.execute("SELECT COUNT(*) FROM runs").fetchone()[0], 0)
@@ -209,7 +210,7 @@ class OperationTests(unittest.TestCase):
         self.assertEqual(record_counter("TASK-COUNTER", "review", "Fix findings", "changes", self.root)["status"], "doing")
         task, body = read_front(path)
         self.assertEqual(task["review_round"], 1)
-        self.assertTrue((self.root / "reviews/REV-002.md").exists())
+        self.assertTrue((self.root / "reviews/REV-003.md").exists())
         task["attempts"] = 0
         write_front(path, task, body)
         self.assertIn("TASK-COUNTER", scan(self.root)["protocol_violations"])
@@ -217,17 +218,38 @@ class OperationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             record_counter("TASK-COUNTER", "attempt", "Bypass", root=self.root)
 
-    def test_third_recorded_review_triggers_rule_one(self):
+    def test_reviews_rebuild_after_database_loss_and_avoid_restored_ids(self):
+        path = self.counter_task()
+        scan(self.root)
+        with database(self.root) as conn:
+            self.assertEqual({r[0] for r in conn.execute("SELECT id FROM reviews")}, {"REV-001", "REV-002"})
+            conn.execute("INSERT INTO reviews VALUES('REV-050','TASK-COUNTER','changes','reviews/REV-050.md')")
+        record_counter("TASK-COUNTER", "review", "Restored DB has a higher ID", "changes", self.root)
+        self.assertTrue((self.root / "reviews/REV-051.md").exists())
+        (self.root / "db/company.sqlite").unlink()
+        scan(self.root)
+        with database(self.root) as conn:
+            self.assertEqual(conn.execute("SELECT status FROM reviews WHERE id='REV-051'").fetchone()[0], "changes")
+            self.assertIsNone(conn.execute("SELECT id FROM reviews WHERE id='REV-050'").fetchone())
+        task, body = read_front(path)
+        task["status"] = "review"
+        write_front(path, task, body)
+        record_counter("TASK-COUNTER", "review", "Review after database rebuild", "pass", self.root)
+        self.assertEqual(read_front(self.root / "reviews/REV-052.md")[0]["result"], "pass")
+
+    def test_third_changes_review_is_refused_before_writes(self):
         path = self.counter_task()
         for index in range(3):
             task, body = read_front(path)
             task["status"] = "review"
             write_front(path, task, body)
-            record_counter("TASK-COUNTER", "review", f"Round {index + 1}", "changes", self.root)
-        self.assertEqual(read_front(path)[0]["review_round"], 3)
-        self.assertIn("TASK-COUNTER", scan(self.root)["loops"])
-        self.assertEqual(read_front(path)[0]["status"], "blocked")
-        self.assertIn("LOOP-TASK-COUNTER", (self.root / "approvals/pending.md").read_text(encoding="utf-8"))
+            if index == 2:
+                with self.assertRaisesRegex(ValueError, "Two review rounds"):
+                    record_counter("TASK-COUNTER", "review", "Third changes", "changes", self.root)
+            else:
+                record_counter("TASK-COUNTER", "review", f"Round {index + 1}", "changes", self.root)
+        self.assertEqual(read_front(path)[0]["review_round"], 2)
+        self.assertFalse((self.root / "reviews/REV-005.md").exists())
 
 
 if __name__ == "__main__":

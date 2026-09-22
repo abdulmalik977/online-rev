@@ -68,17 +68,20 @@ def record_counter(ident, action, note, result=None, root=ROOT):
             raise ValueError("Counter protocol violation; run watchdog and inspect history")
         if task["status"] in {"blocked", "done", "killed"} or (action == "review" and task["status"] != "review"):
             raise ValueError("Task is not eligible for this action")
+        if action == "review" and result == "changes" and task["review_round"] >= 2:
+            raise ValueError("Two review rounds exhausted; escalate to owner")
         task["attempts" if action == "attempt" else "review_round"] += 1
         task["updated"] = stamp()
         if action == "review":
             task["status"] = {"pass": "done", "changes": "doing", "reject": "killed"}[result]
-            number = max([int(p.stem[4:]) for p in (root / "reviews").glob("REV-*.md")
-                          if p.stem[4:].isdigit()], default=0) + 1
+            ids = [p.stem for p in (root / "reviews").glob("REV-*.md")]
+            ids += [row[0] for row in conn.execute("SELECT id FROM reviews")]
+            number = max([int(i[4:]) for i in ids if i.startswith("REV-") and i[4:].isdigit()], default=0) + 1
             review_id = f"REV-{number:03d}"
             review_path = root / f"reviews/{review_id}.md"
+            conn.execute("INSERT INTO reviews VALUES(?,?,?,?)", (review_id, ident, result, f"reviews/{review_id}.md"))
             write_front(review_path, dict(id=review_id, task_id=ident, result=result,
                         review_round=task["review_round"], created=task["updated"]), note)
-            conn.execute("INSERT INTO reviews VALUES(?,?,?,?)", (review_id, ident, result, f"reviews/{review_id}.md"))
         counter_event(root, task, action, note)
         write_front(path, task, body)
         sync_tasks(conn, tasks(root))
@@ -91,6 +94,9 @@ def scan(root=ROOT, at=None):
                 "capacity": [], "low_compute": [], "old_approvals": [], "protocol_violations": []}
     with locked(root), database(root) as conn:
         records = tasks(root)  # Validate every task before any mutation.
+        reviews = [(p, read_front(p)[0]) for p in sorted((root / "reviews").glob("REV-*.md"))]
+        if any(p.stem != review["id"] for p, review in reviews):
+            raise ValueError("Review filename disagrees with ID")
         approvals(root)
         approvals(root, True)
         for agent in ("claude", "codex"):
@@ -126,6 +132,9 @@ def scan(root=ROOT, at=None):
                              f"# Watchdog transition\n{task['id']} → {desired}\n" + "; ".join(reasons) + "\n")
         sync_tasks(conn, records)
         seed(conn, at)
+        conn.execute("DELETE FROM reviews")
+        conn.executemany("INSERT INTO reviews VALUES(?,?,?,?)", [
+            (r["id"], r["task_id"], r.get("result", r.get("status", "open")), f"reviews/{p.name}") for p, r in reviews])
         for agent in ("claude", "codex"):
             if rule_5_capacity([t for _, t, _ in records], agent):
                 findings["capacity"].append(agent)
