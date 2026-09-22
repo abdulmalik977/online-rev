@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.env
+.runtime/
+db/*.sqlite-journal
+db/*.sqlite-wal
+db/*.sqlite-shm

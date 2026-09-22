@@ -1,0 +1,11 @@
+# Install only on a Linux host with cron supporting CRON_TZ (for example Cronie).
+# Replace /ABS/PATH/company-os with the deployment path; provision a private environment.
+# If cron lacks CRON_TZ, configure the host timezone as Asia/Riyadh before installation.
+CRON_TZ=Asia/Riyadh
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+5,35 * * * * cd /ABS/PATH/company-os && python3 scripts/watchdog.py >> logs/cron.log 2>&1
+0 8 * * * cd /ABS/PATH/company-os && python3 scripts/daily_report.py --email >> logs/cron.log 2>&1
+0 9 * * * cd /ABS/PATH/company-os && bash scripts/run_agent.sh claude plan >> logs/cron.log 2>&1
+0 17 * * * cd /ABS/PATH/company-os && bash scripts/run_agent.sh claude review >> logs/cron.log 2>&1
+0 10,14,18 * * * cd /ABS/PATH/company-os && bash scripts/run_agent.sh codex execute >> logs/cron.log 2>&1
