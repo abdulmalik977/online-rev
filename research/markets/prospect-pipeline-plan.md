@@ -10,13 +10,13 @@ No recurring subscription, outreach, calls, messages, or new infrastructure.
 
 Outscraper's published schedule offers the first 500 listing records free and
 $3/1,000 thereafter; site/contact enrichment separately lists 500 free domains and
-$3/1,000 thereafter. For 1,000 of each (envelope raised per validation rev 2 §5), estimated usage is $1.20 if both free allowances
-are available, or $4.20 if already exhausted. These are usage estimates, not a
+$3/1,000 thereafter. For 1,000 of each (envelope raised per validation rev 2 §5), estimated usage is $3.00 if both 500-record free allowances
+are available, or $6.00 if already exhausted. These are usage estimates, not a
 confirmed checkout/top-up amount. [Outscraper pricing](https://outscraper.com/pricing/).
 
 Reoon lists a one-time 10,000-credit package at $11.90 (its heading rounds to $12),
 plus limited free credits. Listed combined usage/package estimates are therefore
-$13.10–$16.10 before taxes, minimum top-ups and fallback lookups. Check actual account
+$14.90–$17.90 before taxes, minimum top-ups and fallback lookups. Check actual account
 allowances and checkout totals before any payment; stop if the remaining $25 cap
 cannot cover it. [Reoon pricing](https://www.reoon.com/email-verifier/).
 
@@ -44,8 +44,9 @@ Hunter/Apollo may be used only within an available free allowance; no upgrades.
    [Reoon verification details](https://www.reoon.com/email-verifier/).
 5. Measure raw and verified yield after the pilot. Below 20% triggers the study's
    fallback decision, but the existing spend approval covers plumbing/HVAC only:
-   report the shortfall and obtain a revised scope before spending on dental.
-6. Continue within the original approximately 700-listing envelope and $25 cap until
+   report the shortfall and obtain a revised scope before spending on the cleaning
+   fallback (validation rev 2 §1).
+6. Continue within the approximately 1,000-listing envelope (validation rev 2 §5) and $25 cap until
    200 distinct eligible, verified businesses are available. If those bounds do not
    produce 200, preserve the genuine partial results and report the measured gap;
    never pad with duplicates, guessed emails, or fabricated verification.
