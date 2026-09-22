@@ -1,72 +1,65 @@
-# The offer (TASK-003) — one product, self-serve, done-for-you
+# The offer (TASK-003) — one product, self-serve, done-for-you — revision 2
 
-Author: Claude (planner). Date: 2026-09-22. For Codex challenge (round 1). Governs DEC-006.
-Inputs: research/markets/dec-001-validation.md rev 2 (competitor prices §3), DEC-007 (pilot: US plumbing/HVAC, Houston).
+Author: Claude (planner). Date: 2026-09-22. Revision 2 answers REV-007 / research/markets/offer-challenge.md point by point (§8). Governs DEC-006 within DEC-007.
 
-## 1. Decision: candidate (b) — done-for-you website, hosted and maintained, $119/month
+## 1. Decision (unchanged): candidate (b) — done-for-you website, hosted and maintained, $119/month test price
 
-A plumber/HVAC contractor pays $119/month, does nothing, and gets a fast mobile-first website built from data that is already public (Google Business Profile, existing site, reviews, photos), live within 48 hours of payment, hosted, secured, and updated by email request. The prospect sees the finished site before paying: the sample *is* the product.
+A plumber/HVAC contractor pays $119/month and gets a fast mobile-first website built from facts that are already public, live within two business days, hosted, secured, and updated by email within a defined monthly allowance. The prospect sees the finished concept before paying. $119 is a **test price** inside the observed supply band (Zero Degree $97/$147 no setup; NiceJob Sites $99 + $199 setup); it does not establish conversion. Demand evidence comes only from the pilot (DEC-007).
 
-Why (b) and not (a)/(c)/(d): §2 table. Short version: (b) is the only candidate where the sample-before-contact is the complete deliverable, needs no API approval, no phone-carrier setup, no customer data, and no US telecom registration.
+## 2. Scoring — four DEC-006 candidates (corrected)
 
-## 2. Scoring — four DEC-006 candidates
-
-Criteria (1–5): automation share Codex can reach; sample impact (what the prospect sees before contact); competitor price band fit for $99–$300 self-serve; delivery risk (gates outside our control).
-
-| Candidate | Automation ≥70%? | Sample impact | Competitor band | Delivery risk | Total /20 |
+| Candidate | Automation ≥70% of repeat build steps? | Sample impact | Competitor band ($99–$300 self-serve) | Delivery risk (external gates) | Total /20 |
 |---|---|---|---|---|---|
-| (a) GBP + review management | 4 — reply drafting and posts automate; **review requests need the customer's job/customer list**, which breaks "does nothing" | 3 — audit report ("40 unanswered reviews, competitor has 3×") is persuasive but abstract | 5 — NiceJob $75/125, GatherUp $99, Merchynt $99, Thryv $99 | **2 — Google Business Profile API requires an approved API project (application, review, no fixed SLA); without it, operation is browser automation on a manager account, fragile and against the spirit of the ToS** | 14 |
-| **(b) Website + hosting + maintenance** | **5** — generator from public data, static hosting, AI-drafted update edits; residual manual: QA, domain handoff, edge-case design | **5** — a live preview of *their* new site at a link; nothing to imagine | 4 — Zero Degree $97/147 (sold by call), NiceJob Sites $99+199, FlashCrafter ~$199; DIY floor Durable $25 | 4 — only gate is the customer's DNS change (or we serve on a subdomain until they do); existing-site owners must want to switch | **18** |
-| (c) Missed-call text-back / AI receptionist | 4 — Twilio flows automate; onboarding needs **conditional call forwarding set by the customer** on their carrier | 4 — "we called you at 2pm, no answer; here is the text your customer would have got" is vivid | 5 — Rosie $49/149/299, Smith.ai $150, SalesCaptain $159 | **1 — US A2P 10DLC registration requires a registered business (EIN/US entity) and per-campaign approval; TCPA exposure; no US entity today** | 14 |
-| (d) Monthly local-SEO content | 5 — fully generatable | 2 — a sample article shows little; results take months | 3 — theStacc $49/99, Verblio pay-per-word; human tiers $600+; buyers already have an agency | 3 — needs write access to their existing site/CMS | 13 |
+| (a) GBP + reviews | 4 — replies/posts automate; review requests need the customer's job list | 3 | 5 — NiceJob $75/125 · GatherUp $99 · Merchynt $99 · Thryv $99 | 2 — Google Business Profile API needs an approved project (https://developers.google.com/my-business/content/basic-setup) | 14 |
+| **(b) Website + hosting + maintenance** | **5** (repeat build steps; maintenance share unmeasured, see §6) | **5** | 4 — Zero Degree $97/147 · NiceJob Sites $99+199 · FlashCrafter ~$199 | 4 — hosting must permit commercial use; payment provider eligibility unconfirmed (§3) | **18** |
+| (c) Missed-call text-back | 4 — Twilio flows automate; customer must set conditional call forwarding | 4 | 5 — Rosie $49/149/299 · Smith.ai $150 · SalesCaptain $159 | 2 — US A2P 10DLC registration and per-campaign approval; sole proprietors can register without an EIN per Twilio (https://www.twilio.com/docs/messaging/compliance/a2p-10dlc/collect-business-info), but this owner's eligibility and TCPA consent obligations are unestablished | 15 |
+| (d) Local-SEO content | 5 | 2 | 3 — theStacc $49/$99 (https://thestacc.com/pricing) · Verblio $49.50 + $0.06/word (https://www.verblio.com/pricing) · Content Cucumber $590 (https://contentcucumber.com/pricing) | 3 — needs write access to the customer's existing site/CMS | 13 |
 
-(b) wins on the two criteria that decide whether a no-call sale can happen at all: what the prospect sees, and whether we can deliver without a third party's approval. (a) is the natural **second product** once we have 10 paying customers and an approved GBP API project; it is not dropped, it is sequenced.
+Anchors are judgments; totals add. (c) rises to 15 after the A2P correction; (b) still leads on the two criteria that decide whether a no-call sale can happen: what the prospect sees, and whether delivery depends on a third party's approval.
 
-## 3. The offer, as it appears on the landing page
+## 3. External gates — stated, not assumed
 
-**"Your new website, built from what's already on Google. Live in 48 hours. $119/month. Cancel anytime."**
+- **Hosting.** GitHub Pages excludes sites that primarily facilitate commercial transactions or run an online business (https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits). Previews and customer sites will not be published there. Candidate hosts whose free tiers permit commercial use: Cloudflare Pages, Netlify. Codex verifies the current terms of the chosen host in TASK-006 session 3 and records the check; the owner creates the (free) account. Until then, previews stay local/portable (as built in session 1).
+- **Payment.** Lemon Squeezy prohibits design/web-development services (https://docs.lemonsqueezy.com/help/getting-started/prohibited-products); Paddle treats primarily human-services offerings as a poor fit and reviews the product/domain (https://www.paddle.com/help/start/intro-to-paddle/what-am-i-not-allowed-to-sell-on-paddle). **Provider: unspecified.** Interface stays provider-agnostic (one checkout URL + one signed webhook). Owner decision needed, with two candidate paths for the owner to check eligibility: (i) a merchant-of-record application describing the product as a hosted website platform subscription, subject to that provider's review; (ii) a Saudi payment gateway under the owner's existing commercial registration that accepts international cards in USD (e.g., Tap Payments, Moyasar, PayTabs — eligibility, fees and payout terms to be confirmed by the owner). No tax-handling promise is made until a provider is accepted.
+- **Content rights.** Previews use only facts verified on the business's own website plus name, city, phone and category; no third-party review text, no ratings copied, no photos from Google or the business site; original illustrations only; a link "see reviews on Google" instead of copied reviews. Every preview states it is an unsolicited, independent concept, not the official site (implemented in session 1). After purchase, photos and any testimonial text come from the customer, who confirms they own or may use them.
+
+## 4. The offer, as it will appear on the landing page (narrowed to what v1 implements)
+
+**"Your new website, built from what's already public about your business. Live in two business days. $119/month. Cancel anytime."**
 
 Included every month:
-- Fast, mobile-first site: services, service area, reviews (pulled from Google), photos, hours, click-to-call, quote/contact form that emails the owner within a minute.
-- Hosting, SSL, daily backups, uptime monitoring.
-- Unlimited small updates by email (new service, new photos, price change, holiday hours) — done within 1 business day.
-- One monthly email: visits, calls clicked, form leads.
-- Domain: we connect the customer's existing domain (they change two DNS records with our one-page instructions, or grant DNS access); until then the site is live on `name.ourdomain.com`.
+- Mobile-first site: services, service area, hours (once confirmed by the customer), click-to-call, contact form whose submissions are forwarded to the owner's email (form backend chosen in TASK-007; no delivery-time promise beyond "forwarded automatically").
+- Hosting on a commercial-use host, HTTPS, weekly site export kept 30 days.
+- **Updates: up to 5 requests per month, each up to 30 minutes of work, completed within 2 business days.** Small = text, hours, prices, adding/removing a service, swapping customer-supplied photos. Larger changes are quoted separately or declined.
+- Monthly email with visits and form submissions (cookie-free analytics, e.g. Cloudflare Web Analytics).
+- Domain: customer's existing domain connected with a one-page instruction for their DNS provider (records vary by provider); until then the site runs on a subdomain of ours.
 
-Not included (keeps the promise honest): SEO campaigns, ads, logo design, copy interviews, e-commerce, phone answering.
+Not included: SEO campaigns, ads, logo design, copywriting interviews, e-commerce, phone answering, uptime guarantees beyond the host's own.
 
-Price and terms: $119/month, billed monthly by card via a merchant-of-record checkout (Paddle or Lemon Squeezy — handles US sales tax and pays out to the owner; the owner registers this once). No setup fee. Cancel anytime from the email receipt link; the site stays up to the end of the paid month; on cancellation the customer gets a zip export of their site.
+Launch clock: **2 business days (Mon–Fri, US Central)** from the later of (a) payment and (b) the customer's confirmation email (domain choice, corrections, photo consent). Refund rule: if the site is not live on the subdomain within **5 business days** of that same start, the first month is refunded automatically; otherwise cancellation is the only remedy, effective end of the paid month, with a zip export delivered.
 
-Refund rule: if the site is not live within 5 business days of payment, the first month is refunded in full, automatically. No other refunds; cancellation covers everything else.
+Preview expiry: 14 days; at expiry the deployment is **removed** (not just bannered) by the deploy script.
 
-SLA: launch ≤48 h business time; update requests ≤1 business day; uptime target 99.9% (static hosting); reply to any email ≤1 business day, signed "The [Company] team".
+## 5. The sample (built before contact) — implemented in TASK-006 session 1
 
-## 4. The sample (built before contact, ≤15 min compute per prospect)
+Input: name, city, phone, category, services and source URL verified on the business's own site. Output: one static site, three deterministic styles, noindex, expiry banner, disabled buy button until a checkout URL exists. Measured local render: sub-second per site (session-1-results.json). **Hypothesis, not measured:** end-to-end ≤4 minutes per prospect including manual fact verification; 200 prospects = 400–800 minutes of mostly verification work unless TASK-005 data reduces it. This is the real cost of the sample and is reported per batch, not assumed.
 
-Input per prospect (all public): GBP name, categories, address/service area, phone, hours, rating and review texts, photos, existing website URL if any.
-Generation: one template family (plumbing/HVAC) with 3 color/style variants chosen by a hash of the business name; sections filled from the inputs; reviews block uses their real 4–5★ Google reviews (public, attributed); photos from GBP where available, else category stock; copy generated from categories and service area, with a fixed no-claims rule (no "licensed/insured/24-7" unless found on their existing site or GBP).
-Output: static site deployed to `preview.ourdomain.com/<slug>` with a 14-day expiry banner ("Preview built for [Business], expires [date]"), a `noindex` tag, and one button: "Make this my website — $119/month".
-Cost: zero marginal (static hosting free tier); compute ≈ 2–4 minutes per prospect. 200 previews ≈ one Codex session plus a generator build.
-Outreach email (DEC-003 limits) says: "We built a new website for [Business] — take a look: [link]. If you want it, it's live on your domain in 48 hours. If not, it disappears in 14 days." Plain text, physical address, unsubscribe link, no attachments.
+## 6. Unit economics (hypotheses until measured)
 
-## 5. Delivery flow after payment (owner does nothing)
+Target 10,000 SAR ≈ $2,670 → 23 customers at $119. $119 less an assumed 5% + $0.50 provider fee = $112.55 before hosting (~$0 on free tiers), support time, compute and refunds; realized margin is unknown until 10 customers and one month of update requests are logged. Maintenance automation ≥70% is a target verified by a timed trial of a bounded request mix in TASK-007, not a claim.
 
-1. Checkout webhook → order record (customer, preview slug, plan).
-2. Codex promotes the preview: removes banner/noindex, provisions `name.ourdomain.com`, sends a welcome email with the DNS instructions and the update address.
-3. Customer replies with changes → AI drafts the edit → Codex applies and redeploys → confirmation email. Anything outside scope gets a polite "not included" reply template.
-4. Monthly: usage email from analytics; failed payment → 7-day grace, then site to holding page.
+Outreach volume: DEC-003 mailbox caps count sends, not unique prospects; a 3-email sequence reaches roughly one third as many prospects as the send cap. Pilot reporting uses unique prospects contacted.
 
-Owner touchpoints: none in steady state. Exceptions to the owner queue: chargebacks, legal/takedown requests, any refund outside the rule.
+## 7. Product boundary
 
-## 6. Unit economics
+DEC-007 governs vertical and time-box. Reversal triggers here are **recommendations to the owner**, not automatic changes: reply rate <0.5% on the first 500 unique prospects → change the email/sample first; <2 paying customers after 1,500 unique prospects → Claude re-scores (a) and reports; the owner decides.
 
-Target 10,000 SAR ≈ $2,670 → **23 customers at $119**. Costs per customer/month: hosting ≈ $0, merchant-of-record fee ≈ 5% + $0.50 ≈ $6.50, Codex compute for updates ≈ minutes. Gross margin ≈ 90%. Pilot outreach volume from DEC-003 (3–5 mailboxes × 40/day) ≈ 3,000–5,000 emails/month; at a 0.5–1% paid conversion on prospects who received a finished site, 15–50 customers/month is the range to test — the number that matters is the first 500 emails.
+## 8. Changes from revision 1 (answers to REV-007)
 
-## 7. What Codex is asked to confirm (challenge targets)
-
-1. Automation ≥70% for build + maintenance, with a written build estimate ≤5 sessions covering: GBP data ingestion (from the TASK-005 CSV fields plus a per-prospect GBP fetch), template family, generator, static deploy, preview index with expiry, checkout webhook, promotion script.
-2. The 2–4 minute per-prospect compute claim.
-3. Any legal or platform risk in showing a business's own public Google reviews and photos on a preview built for that business (attribution, takedown on request).
-4. Whether the $119 point should be $99 (DIY-floor pressure) or $149 (Zero Degree parity) — argue with the §3 competitor rows, not preference.
-
-Reversal triggers (pilot): <0.5% reply rate on the first 500 emails with live previews → change the sample email before the product; <2 paying customers after 1,500 emails → re-score (a) as primary.
+1. Hosting: GitHub Pages ruled out for sales assets; commercial-use host to be verified by Codex; previews stay local until then.
+2. Payment: provider unspecified; two eligibility paths for the owner; tax promise removed.
+3. Content: reviews, ratings and photos removed from previews; original artwork; customer-supplied media after purchase.
+4. Promises narrowed: one launch clock with timezone and start conditions; refund trigger defined; updates bounded (5/month, ≤30 min, 2 business days); no 1-minute form promise; DNS wording generalized; expiry = removal.
+5. A2P statement corrected; (c) rescored 14 → 15; third linked content competitor added.
+6. 2–4 minute, 90% margin and ≥70% maintenance figures labeled hypotheses with the measurement that would settle each.
+7. Reversal triggers reframed as owner recommendations under DEC-007.
