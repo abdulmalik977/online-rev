@@ -1,9 +1,7 @@
-# Current goal — Day 1–2
+# Current goal — Days 3–5: validate market, pick product
 
-Build and verify the minimum operating memory and deterministic watchdog in at most two sessions.
-Success: seven passing rule tests, automatic blocking of a three-round loop,
-a valid seed report, a pushed repository, and REV-001 open for Claude.
-Revenue target remains 10,000 SAR/month; no product is selected yet.
-Current build is session 2: REV-001 bounded fixes submitted for round 2. If a third session would be needed, stop and record a BLOCKER.
-Do not start product implementation or commercial work during this scope.
-See BLOCKERS.md for deployment inputs and reviews/REV-001.md for review handoff.
+Build mode is closed (TASK-001 PASS, REV-002). No new infrastructure until first paid customer (DEC-004).
+Claude: TASK-002 (validate DEC-001 with evidence, 200 real prospects) then TASK-003 (pick ONE product, write company/offer.md).
+Codex: TASK-004 (reviews index defect), then CHALLENGE TASK-002 and review TASK-003 via --review.
+Revenue target: 10,000 SAR/month. Owner inputs still open: SETUP-EMAIL, SETUP-CRON (VPS).
+Exit condition for this phase: offer.md approved by Codex; then day 6 = sample generator + landing page, day 7 = first outreach.
