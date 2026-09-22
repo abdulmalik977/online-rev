@@ -13,12 +13,12 @@ not transcribed/verified in this pass. These are not paid customers or vetted le
 | Abacus Plumbing, Air Conditioning & Electrical | https://www.abacusplumbing.net/ — Houston, plumbing/drain cleaning/leak detection; 713-766-3605 |
 | Lucky's Plumbing | https://luckysplumbing.com/ — Houston, plumbing/leaks/water heaters; 713-464-1921 |
 | Texas Quality Plumbing | https://texasqualityplumbing.com/ — Greater Houston, water heaters/drains/repiping/gas lines; 346-636-2418 |
-| Wedgeworth Plumbing | https://wedgeworthplumbing.com/ — Houston plumbing/water heater service; phone omitted |
+| Wedgeworth Plumbing | https://wedgeworthplumbing.com/ — Houston plumbing/water heater service; 832-867-5309 (header and contact section) |
 | Mission Air Conditioning & Plumbing | https://www.missionac.com/ — Houston HVAC/plumbing/water heaters; phone omitted |
 | Village Plumbing, Air & Electric | https://villageplumbing.com/ — Houston plumbing/HVAC; 281-957-6221 |
 | John Moore Services | https://www.johnmooreservices.com/plumbing/ — Houston plumbing/repiping/sewer; 713-853-9881 |
 | GEI Plumbing Services | https://www.geiplumbingservices.com/ — Houston plumbing repairs; 832-402-7860 |
-| Aqueduct Plumbing Company | https://aqueductplumbingcompany.com/services/ — Houston plumbing/repiping/gas lines; phone omitted |
+| Aqueduct Plumbing Company | https://aqueductplumbingcompany.com/services/ — Houston plumbing/repiping/gas lines; Houston office 281-488-6238 (not San Antonio 210-796-6238) |
 
 ## Remaining Maps check
 
@@ -35,3 +35,8 @@ The generator's original `house.svg` is generic artwork, not a depiction of any
 business, staff, premises or completed work. It requires no third-party stock license.
 The source audit fields stay in local `records.json`; `deploy.py` excludes that audit
 file from the public package. Each preview retains a visible official-source link.
+
+## Session 2 source corrections
+All ten official source pages were reopened on 2026-09-22. Wedgeworth and Aqueduct missing phone fields are now populated from the same cited pages, with no guessed numbers. Aqueduct explicitly separates Houston/Webster from San Antonio; only the Houston number is used. Mission phone remains blank because no verifiable number was visible in the fetched page; its official website link remains usable.
+
+Offer revision 2 sections 3/5 now explicitly use independently verified business-website facts. No Google review/photos or invented Maps IDs were added. The legacy Maps criterion in TASK-006 remains transparently unmet (0 checked); this is not mislabeled as a completed Maps batch. Publication handoff must reconcile that legacy wording with the accepted offer before claiming overall TASK-006 completion.

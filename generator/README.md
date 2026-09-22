@@ -1,4 +1,4 @@
-# Houston website concept generator — TASK-006, session 1/3
+# Houston website concept generator — TASK-006, sessions 1?2/3
 
 Portable local v1, Python 3.11+, standard library only. No accounts or purchases.
 Ten real businesses, three deterministic styles, original artwork, escaped factual
@@ -47,12 +47,39 @@ offer correction, then upload the archive as a full replacement and verify all t
 URLs. Do not upload the repository root. No provider integration was invented here.
 
 Expiry JS hides the page at the UTC deadline as a convenience; it is **not** access
-control or deletion. A rebuild at/after expiry emits a minimal expired page and removes
-names from the index. The eventual host must replace the whole tree at expiry and
+control or deletion. A rebuild at/after expiry now emits **no preview directories** and removes
+names from the index. A generic 404 page handles expired or missing links. The eventual host must replace the whole tree at expiry and
 purge caches as supported. Until scheduled deployment/removal is working, do not
 promise customers that static content automatically disappears. `noindex` is a
 crawler request, not privacy protection.
 
-Remaining session budget: at most two sessions, for source/visual refinements and
-eligible-host deployment. TASK-006 is not ready for Claude PASS until ten live URLs,
+Remaining session budget: **one session (3/3)** for eligible-host deployment and
+remote expiry verification. Session 2 completed mobile QA, source corrections and
+the active/expiry replacement bundle. TASK-006 is not ready for Claude PASS until ten live URLs,
 the Maps check, the agreed content spec and expiry deployment are actually verified.
+
+
+## Session 2 expiry handoff
+
+```powershell
+python generator/expiry_bundle.py --destination .runtime/session2-bundle --preview-date 2026-09-22
+```
+
+Use a fresh destination; preserve the original preview date. Produces `active.zip`
+(ten previews), `expiry.zip` (zero previews), and `expiry-manifest.json` with the
+UTC deadline, ten removal paths, archive SHA-256 hashes and acceptance checks.
+Checkout stays disabled in this handoff. The manifest is an internal deployment
+instruction, not part of either public archive. Prepared future removal content
+is not evidence that a remote scheduler has executed.
+
+At 2026-10-06 00:00 UTC, the host must **replace the entire active deployment** with
+expiry.zip, not extract it over the old directory. Merge-upload leaves old previews
+behind. Verify ten HTTP 404/410 responses (no 200 SPA fallback), purge previous
+caches, and disable old deployment URLs. `_headers` requests no-store/noindex for
+hosts supporting that format; check actual response headers in session 3.
+Neither ZIP contains records.json, build reports, manifests, credentials or source
+CSVs. The expiry ZIP also contains no business pages/names/phones/checkout.
+
+Session-2 tests served the expired tree locally and confirmed all ten old routes
+return 404. This proves the replacement artifact; no remote deletion is claimed.
+See [session results](session-2-results.json) and [visual review](qa/session-2/README.md).

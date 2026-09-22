@@ -109,7 +109,7 @@ class GeneratorTests(unittest.TestCase):
         archive = self.root / 'site.zip'
         self.assertEqual(package(out, archive, DAY)['pages'], 10)
         with zipfile.ZipFile(archive) as zipped:
-            self.assertEqual(len(zipped.namelist()), 14)
+            self.assertEqual(len(zipped.namelist()), 16)
             self.assertFalse(any(n.endswith('.json') for n in zipped.namelist()))
         (out / '.env').write_text('fake fixture, not a secret')
         with self.assertRaisesRegex(ValueError, 'Unexpected'):
@@ -124,7 +124,8 @@ class GeneratorTests(unittest.TestCase):
         dead = self.root / 'dead'
         build(HERE / 'testset.csv', dead, DAY, date(2026, 10, 6))
         self.assertNotIn(self.records[0]['business'], (dead / 'index.html').read_text())
-        self.assertEqual(package(dead, self.root / 'expired.zip', date(2026, 10, 6))['pages'], 10)
+        self.assertEqual(package(dead, self.root / 'expired.zip', date(2026, 10, 6))['pages'], 0)
+        self.assertFalse((dead / 'previews').exists())
 
 
 if __name__ == '__main__':

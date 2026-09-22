@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 import zipfile
 
-ROOT_FILES = {'index.html', 'style.css', 'expiry.js', 'house.svg'}
+ROOT_FILES = {'index.html', 'style.css', 'expiry.js', 'house.svg', '404.html', '_headers'}
 
 
 def package(source, archive, today=None):
@@ -39,7 +39,7 @@ def package(source, archive, today=None):
     if not ROOT_FILES <= {r for _, r in files}:
         raise ValueError('Incomplete static assets')
     pages = sum(r.startswith('previews/') for _, r in files)
-    if pages != report['count']:
+    if pages != report['active_count']:
         raise ValueError('Preview count differs from build report')
     archive.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(archive, 'x', compression=zipfile.ZIP_DEFLATED) as bundle:

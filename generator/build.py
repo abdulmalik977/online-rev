@@ -130,10 +130,10 @@ def build(csv_path, output, preview_date, as_of=None, checkout=''):
     if output.exists():
         raise ValueError('Output must be a new directory; build then replace deployed tree, never merge')
     output.mkdir(parents=True)
-    for asset in ('style.css', 'expiry.js', 'house.svg'):
+    for asset in ('style.css', 'expiry.js', 'house.svg', '404.html', '_headers'):
         (output / asset).write_bytes((HERE / asset).read_bytes())
     expired = as_of >= preview_date + timedelta(days=14)
-    for record, page in rendered:
+    for record, page in ([] if expired else rendered):
         folder = output / 'previews' / record['slug']
         folder.mkdir(parents=True)
         (folder / 'index.html').write_text(page, encoding='utf-8')
@@ -148,6 +148,8 @@ def build(csv_path, output, preview_date, as_of=None, checkout=''):
     (output / 'records.json').write_text(json.dumps(records, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
     report = dict(count=len(records), preview_date=str(preview_date), as_of=str(as_of),
                   expires=str(preview_date + timedelta(days=14)), expired=expired,
+                  active_count=0 if expired else len(records),
+                  removed_paths=[f'previews/{r["slug"]}/' for r in records] if expired else [],
                   median_render_seconds=statistics.median(timings), render_seconds=timings,
                   total_build_seconds=time.perf_counter() - start,
                   measurement='Local validation/render/write only; excludes research, QA, deployment and maintenance',

@@ -1,0 +1,72 @@
+{
+  "session": 2,
+  "session_limit": 3,
+  "remaining_sessions": 1,
+  "unit_tests_passed": 11,
+  "viewport_checks": 40,
+  "viewport_failures": 0,
+  "widths": [
+    320,
+    390,
+    430,
+    1440
+  ],
+  "styles_visually_inspected": [
+    0,
+    1,
+    2
+  ],
+  "active_previews": 10,
+  "expired_preview_directories": 0,
+  "local_expired_http_404_count": 10,
+  "total_build_seconds": 0.013187399948947132,
+  "median_render_seconds": 8.169998181983829e-05,
+  "measurement": "Local validation/render/write only; excludes research, QA, deployment and maintenance",
+  "source_pages_reopened": 10,
+  "phone_corrections": [
+    "Wedgeworth Plumbing",
+    "Aqueduct Plumbing Company"
+  ],
+  "phone_unverified": [
+    "Mission Air Conditioning & Plumbing"
+  ],
+  "maps_checked": 0,
+  "published": false,
+  "remote_expiry_verified": false,
+  "expiry_manifest": {
+    "schema_version": 1,
+    "prepared_on": "2026-09-22",
+    "preview_date": "2026-09-22",
+    "expires_at": "2026-10-06T00:00:00Z",
+    "input_sha256": "bb7287c384c8b52fde39e0a70a8afe3fcb378f28cf2be6185363ef232e0e67af",
+    "archive_sha256": {
+      "active.zip": "156e4e5f5b19260d64a050cdf40db4e5ef2586fd5d5c91f6f63298b58169c1d8",
+      "expiry.zip": "0b922ea0b5f544e2937617d38861ba3530f71fd229e973eac85e32e5a6848e5b"
+    },
+    "active_count": 10,
+    "expired_count": 0,
+    "remove_paths": [
+      "/previews/nick-s-plumbing-air-conditioning-e70bcd39/",
+      "/previews/abacus-plumbing-air-conditioning-electrical-87277293/",
+      "/previews/lucky-s-plumbing-7e06a4be/",
+      "/previews/texas-quality-plumbing-b176105a/",
+      "/previews/wedgeworth-plumbing-a4fafdf1/",
+      "/previews/mission-air-conditioning-plumbing-c37fb587/",
+      "/previews/village-plumbing-air-electric-a4e7849a/",
+      "/previews/john-moore-services-661db278/",
+      "/previews/gei-plumbing-services-370801c2/",
+      "/previews/aqueduct-plumbing-company-d559a836/"
+    ],
+    "deployment_mode": "replace_entire_site_tree_not_merge",
+    "published": false,
+    "remote_expiry_verified": false,
+    "acceptance": [
+      "At deadline replace active site with expiry.zip",
+      "All remove_paths return HTTP 404 or 410, not a SPA 200 fallback",
+      "No business name, phone, source or checkout remains in public tree",
+      "Verify no-store headers and purge earlier cached active URLs",
+      "Disable old deployment URLs or remove the previous deployment",
+      "Record scheduler result, ten URL statuses and cache checks"
+    ]
+  }
+}
