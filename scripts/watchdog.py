@@ -41,10 +41,54 @@ def rule_7_old_approval(approval, at):
     return at - parse_time(approval["created"]) > timedelta(hours=48)
 
 
+def counter_state(root, task):
+    path = root / f"reviews/counters-{task['id']}.md"
+    entries = [json.loads(line[11:]) for line in path.read_text(encoding="utf-8").splitlines()
+               if line.startswith("- COUNTERS ")] if path.exists() else []
+    return entries[-1]["counters"] if entries else {"attempts": 0, "review_round": 0}
+
+
+def counter_event(root, task, action, note):
+    path = root / f"reviews/counters-{task['id']}.md"
+    previous = path.read_text(encoding="utf-8") if path.exists() else "# Script-owned counter history\n"
+    event = dict(at=stamp(), action=action, note=note,
+                 counters={key: task[key] for key in ("attempts", "review_round")})
+    atomic_write(path, previous + "- COUNTERS " + json.dumps(event, ensure_ascii=False) + "\n")
+
+
+def record_counter(ident, action, note, result=None, root=ROOT):
+    if not note or not note.strip() or (action == "review" and result not in {"pass", "changes", "reject"}):
+        raise ValueError("A note and valid review result are required")
+    with locked(root), database(root) as conn:
+        matches = [record for record in tasks(root) if record[1]["id"] == ident]
+        if not matches:
+            raise ValueError("Unknown task")
+        path, task, body = matches[0]
+        if counter_state(root, task) != {k: task[k] for k in ("attempts", "review_round")}:
+            raise ValueError("Counter protocol violation; run watchdog and inspect history")
+        if task["status"] in {"blocked", "done", "killed"} or (action == "review" and task["status"] != "review"):
+            raise ValueError("Task is not eligible for this action")
+        task["attempts" if action == "attempt" else "review_round"] += 1
+        task["updated"] = stamp()
+        if action == "review":
+            task["status"] = {"pass": "done", "changes": "doing", "reject": "killed"}[result]
+            number = max([int(p.stem[4:]) for p in (root / "reviews").glob("REV-*.md")
+                          if p.stem[4:].isdigit()], default=0) + 1
+            review_id = f"REV-{number:03d}"
+            review_path = root / f"reviews/{review_id}.md"
+            write_front(review_path, dict(id=review_id, task_id=ident, result=result,
+                        review_round=task["review_round"], created=task["updated"]), note)
+            conn.execute("INSERT INTO reviews VALUES(?,?,?,?)", (review_id, ident, result, f"reviews/{review_id}.md"))
+        counter_event(root, task, action, note)
+        write_front(path, task, body)
+        sync_tasks(conn, tasks(root))
+    return task
+
+
 def scan(root=ROOT, at=None):
     at = at or now()
     findings = {"stale": [], "loops": [], "killed": [], "missing_metrics": [],
-                "capacity": [], "low_compute": [], "old_approvals": []}
+                "capacity": [], "low_compute": [], "old_approvals": [], "protocol_violations": []}
     with locked(root), database(root) as conn:
         records = tasks(root)  # Validate every task before any mutation.
         approvals(root)
@@ -53,6 +97,10 @@ def scan(root=ROOT, at=None):
             agent_config(root, agent)
         for path, task, body in records:
             reasons = []
+            if counter_state(root, task) != {k: task[k] for k in ("attempts", "review_round")}:
+                findings["protocol_violations"].append(task["id"])
+                reasons.append("counter protocol violation; inspect script-owned history")
+                add_approval(root, "COUNTERS-" + task["id"], reasons[-1], at)
             if rule_2_stale(task, at):
                 findings["stale"].append(task["id"])
             if rule_1_review_loop(task):
@@ -98,8 +146,8 @@ def scan(root=ROOT, at=None):
 def create_task(source, root=ROOT):
     task, body = read_front(source)
     validate(task)
-    if task["status"] != "todo":
-        raise ValueError("New tasks must start in todo")
+    if task["status"] != "todo" or task["attempts"] or task["review_round"]:
+        raise ValueError("New tasks must start in todo with zero counters")
     if rule_4_missing_metric(task) or rule_1_review_loop(task) or rule_3_attempts(task):
         raise ValueError("New task rejected: success metric or attempt/review limits")
     with locked(root), database(root) as conn:
@@ -109,6 +157,7 @@ def create_task(source, root=ROOT):
             raise ValueError("Task already exists")
         if rule_5_capacity([t for _, t, _ in records], task["owner"]):
             raise ValueError("Five open tasks already exist; creation blocked")
+        counter_event(root, task, "create", "Admitted with zero counters")
         write_front(target, task, body)
         sync_tasks(conn, tasks(root))
     return target
@@ -130,6 +179,7 @@ class RuleTests(unittest.TestCase):
     def save(self, **changes):
         self.task.update(changes)
         path = self.root / f"tasks/{self.task['id']}.md"
+        counter_event(self.root, self.task, "fixture", "Explicit test baseline")
         write_front(path, self.task, "Fixture")
         return path
 
@@ -169,7 +219,7 @@ class RuleTests(unittest.TestCase):
     def test_5_capacity_enforced_on_creation(self):
         source = self.root / "candidate.md"
         for number in range(5):
-            self.task.update(id=f"TASK-{number}", status="todo")
+            self.task.update(id=f"TASK-{number}", status="todo", attempts=0, review_round=0)
             write_front(source, self.task, "Candidate")
             create_task(source, self.root)
         self.task["id"] = "TASK-SIX"
@@ -204,12 +254,19 @@ def main():
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--test", action="store_true")
     group.add_argument("--create", type=Path, help="Admit a task file from outside tasks/")
+    group.add_argument("--review", metavar="TASK-ID")
+    group.add_argument("--attempt", metavar="TASK-ID")
+    parser.add_argument("--result", choices=("pass", "changes", "reject"))
+    parser.add_argument("--note")
     args = parser.parse_args()
     if args.test:
         result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(RuleTests))
         return 0 if result.wasSuccessful() else 1
     try:
-        print(create_task(args.create) if args.create else json.dumps(scan(), indent=2))
+        if args.review or args.attempt:
+            print(json.dumps(record_counter(args.review or args.attempt, "review" if args.review else "attempt", args.note, args.result)))
+        else:
+            print(create_task(args.create) if args.create else json.dumps(scan(), indent=2))
         return 0
     except (ValueError, OSError, RuntimeError) as error:
         print(f"WATCHDOG ERROR: {error}", file=sys.stderr)

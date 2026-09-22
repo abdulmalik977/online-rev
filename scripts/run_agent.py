@@ -1,14 +1,14 @@
 """Finite scheduled run with conservative upfront budget reservation.
 
-The configured adapter must enforce COMPANY_MAX_CREDITS in provider-native units,
-consume context on stdin, and print a JSON receipt with usage and summary on stdout.
-No generic unmetered agent command is enabled by default.
+Built-in CLI adapters consume context on stdin and report observable turns/tokens.
+One credit is one CLI-reported turn, not a hard cap on provider rolling quotas.
 """
 import argparse
 import json
 import math
 import os
 import signal
+import shutil
 import subprocess
 import sys
 from uuid import uuid4
@@ -69,7 +69,7 @@ def run(agent, mode, root=ROOT, dry_run=False):
     ident = f"{agent}-{at.strftime('%Y%m%dT%H%M%S%fZ')}-{uuid4().hex[:6]}"
     log = root / f"logs/runs/{ident}.md"
     status, detail, reserved, prompt = "blocked", "Run not started", False, ""
-    code = 1
+    code, telemetry = 1, {}
     try:
         scan(root, at)
         prompt = context(root, agent)
@@ -77,9 +77,9 @@ def run(agent, mode, root=ROOT, dry_run=False):
             status, detail, code = "dry-run", "Context loaded; no agent launched and no quota charged", 0
             return code
         raw_command = os.environ.get(f"{agent.upper()}_METERED_COMMAND")
-        if not raw_command:
-            raise ValueError(f"Missing {agent.upper()}_METERED_COMMAND; bounded quota adapter required")
-        command = json.loads(raw_command)
+        if not raw_command and not shutil.which(agent):
+            raise ValueError(f"Missing {agent} CLI; install and authenticate it on the operating host")
+        command = json.loads(raw_command) if raw_command else [sys.executable, str(ROOT / f"scripts/adapters/{agent}_adapter.py")]
         if not isinstance(command, list) or not command or not all(isinstance(x, str) and x for x in command):
             raise ValueError("Metered command must be a JSON array of executable and arguments")
         timeout = int(os.environ.get("AGENT_TIMEOUT_SECONDS", "900"))
@@ -98,10 +98,8 @@ def run(agent, mode, root=ROOT, dry_run=False):
             if key.startswith("SMTP_") or key == "OWNER_EMAIL":
                 environment.pop(key)
         returncode, output = invoke(command, prompt, root, environment, timeout)
-        if returncode:
-            status = "failed"
-            raise ValueError(f"Adapter exited {returncode}; reservation retained")
-        receipt = json.loads(output)
+        receipt = json.loads(output) if output.strip() else {}
+        telemetry = {k: receipt[k] for k in ("usage", "tokens") if k in receipt} if isinstance(receipt, dict) else {}
         usage = receipt.get("usage") if isinstance(receipt, dict) else None
         if type(usage) not in (float, int) or not math.isfinite(usage) or usage < 0:
             raise ValueError("Adapter must return a finite nonnegative usage receipt")
@@ -113,6 +111,9 @@ def run(agent, mode, root=ROOT, dry_run=False):
                              f"# Adapter quarantined\nRun: {ident}\nUsage: {usage}; cap: {maximum}\n")
                 add_approval(root, f"QUOTA-{agent}", "Quota adapter exceeded cap; review before re-enabling", now())
             raise ValueError("Adapter violated its hard cap; disable adapter and inspect provider usage")
+        if returncode:
+            status = "failed"
+            raise ValueError(f"Adapter exited {returncode}; reservation retained")
         if not isinstance(receipt.get("summary"), str):
             raise ValueError("Adapter must return a summary string")
         status, detail, code = "done", receipt["summary"][:4000], 0
@@ -124,7 +125,7 @@ def run(agent, mode, root=ROOT, dry_run=False):
             status = "failed"
     finally:
         atomic_write(log, f"# {agent} run — {mode}\nStarted: {stamp(at)}\nFinished: {stamp()}\n"
-                     f"Status: {status}\n{detail}\n\n## Startup context\n{prompt or 'Unavailable; see failure above'}\n")
+                     f"Status: {status}\nCLI usage: {json.dumps(telemetry)}\n{detail}\n\n## Startup context\n{prompt or 'Unavailable; see failure above'}\n")
         if reserved:
             with locked(root), database(root) as conn:
                 conn.execute("UPDATE runs SET status=?,finished=?,detail=? WHERE id=?",

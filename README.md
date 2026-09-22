@@ -29,8 +29,11 @@ The report has nine sections and 19 lines. Monetary currencies stay separate.
 
 Markdown is authoritative for tasks, roles, decisions, and approval entries.
 SQLite indexes tasks and contains runs, reviews, leads, customers, and metrics.
-The initial database is included as requested. Later runtime databases should be
-backed up on the operating host, not merged across concurrent Git clones.
+SQLite, watchdog.json, LOW-COMPUTE flags, and .runtime/ are local and ignored by Git.
+A scan creates the database and rebuilds the task index. Keep the local database
+backed up on the operating host: sync_tasks does not restore historical runs or
+metrics from Markdown. Ignored does not mean disposable. Audit Markdown in
+logs/runs/ and logs/daily/ stays tracked and is committed at handoff.
 Do not commit actual customer data or secrets. Markdown changes made by adapters
 must be committed explicitly; the runner does not automatically publish them.
 
@@ -58,26 +61,62 @@ strictly older than 48h using each approval's timestamp, not file modification t
 Approval format: `- [ ] ID | ISO-8601 UTC timestamp | description`.
 Resolve by moving the whole entry from pending.md to done.md, change `[ ]` to `[x]`,
 and retain its ID/timestamp. A resolved approval does not itself reset task state;
-record the owner's decision and explicitly update the task counters/status.
+record the owner's decision and update status as appropriate; never edit counters directly.
+
+Use script-owned counter commands under the same writer lock:
+
+```sh
+python scripts/watchdog.py --attempt TASK-ID --note "Starting a bounded attempt"
+python scripts/watchdog.py --review TASK-ID --result changes --note "Reviewer findings"
+```
+
+Attempts increment attempts and updated. Reviews require status=review, append a
+REV-nnn.md decision, increment review_round, and set pass=done, changes=doing,
+reject=killed. Submit the next review by setting status=review without changing
+counters. Here review_round counts recorded review decisions, not merely opening
+an invitation: REV-001 can invite round 2 while TASK-001 retains one completed
+review. The third decision triggers rule 1 on the next scan. Counter snapshots in
+reviews/counters-TASK-ID.md are script-owned Markdown audit lines. Initial legacy
+values are explicitly migrated once; new tasks start at zero. Missing history
+means zero, never permission to adopt edited counters. A mismatch is reported as
+protocol_violations, creates an owner escalation, and blocks the task. A crash
+between history and task writes also fails closed for inspection, not silent repair.
 
 ## Quota and scheduled execution
 
-Agents have 100 daily execution credits in agents/*.md. Claude reserves at most
-30/run, twice/day; Codex 20/run, three times/day. These defaults are accounting
-units, **not observed subscription or token limits**. Before production, map them
-to a trustworthy provider budget and configure a hard-capped metered adapter.
-The adapter must preflight remaining provider allowance and enforce its run cap
-before/during requests, including retries and tools. A receipt alone is not a cap.
-No generic unmetered agent command is configured or launched by this repository.
+Agents have 100 daily credits. Claude reserves 30/run, twice/day; Codex 20/run,
+three times/day. **1 credit = 1 observable CLI turn**, not a provider quota unit.
+Built-in scripts/adapters/{claude,codex}_adapter.py are the defaults. Install and
+authenticate the corresponding CLI on the host; missing CLIs fail before reservation.
+Existing *_METERED_COMMAND JSON arrays remain optional adapter overrides.
+CLAUDE_CLI_COMMAND / CODEX_CLI_COMMAND JSON arrays override CLI paths (also used by
+fake-CLI tests). No shell evaluation or permission-bypass flags are used.
 
-Configure `CLAUDE_METERED_COMMAND` / `CODEX_METERED_COMMAND` as a JSON array of
-executable and arguments (no shell evaluation). Adapter contract:
+CLI verification on 2026-09-22:
 
-- Read the startup context from stdin; obey the current goal, role, flags, and tasks.
-- Read `COMPANY_MAX_CREDITS`, `COMPANY_AGENT`, `COMPANY_RUN_MODE`, and `COMPANY_RUN_ID`.
-- Enforce the credit maximum using the chosen provider's actual accounting.
-- Finish with one JSON object on stdout: `{"usage": 7, "summary": "Evidence and result"}`.
-- Avoid detached child processes; clean up provider work on timeout/termination.
+- Codex installed: `codex-cli 0.154.0-alpha.6.2`; checked `codex exec --help` locally.
+  Invocation: `codex exec --json --sandbox workspace-write -`, context through stdin.
+  There is no --max-turns flag in this version. The adapter submits exactly one
+  prompt with no resume/retry: cap=min(COMPANY_MAX_CREDITS, 1) conversation turn.
+  It counts turn.completed events, requires matching turn.started and token usage,
+  and rejects unexpected extra turns. This does not cap internal model/tool steps.
+  [Official OpenAI JSONL documentation](https://developers.openai.com/codex/noninteractive).
+- Claude is not installed here, so no installed Claude version was verified.
+  Invocation: `claude -p --output-format json --max-turns N`, context through stdin;
+  N=COMPANY_MAX_CREDITS. Flags checked in the
+  [official Claude CLI reference](https://code.claude.com/docs/en/cli-reference).
+  The adapter requires num_turns plus input_tokens/output_tokens in usage; verify
+  the deployed version with `claude --version` and `claude --help` before activation.
+
+The adapters run inside the existing runner timeout/process group. They return
+usage, summary, and tokens; the runner writes token totals in each run log for
+calibration, including receipts from unsuccessful CLI runs. Missing usage is an
+error with the reservation retained. Claude agentic turns and Codex conversation
+turns have different granularity; credits are local scheduling measures, not
+proof of equivalent provider activity. Five-hour rolling-window throttling remains
+an accepted residual risk under the 2+3 daily schedule. No subscription CLI can
+provide an external hard cap on the provider allowance; SETUP-QUOTA is resolved
+by this practical policy. No live provider work was launched during these tests.
 
 Reservation is durable before launch and is never refunded automatically, even on
 failure. Runs that would cross 80% are refused; exactly 80% is permitted as the end
@@ -115,5 +154,5 @@ timestamp, retaining quota reservations. Markdown is re-indexed on the next scan
 if a crash interrupts a multi-file transition, rerun watchdog after inspection.
 Do not run two hosts against the same workspace or database.
 
-REV-001 is an open Markdown review request for Claude, not a completed review or
-an already-delivered message. No Claude process or sub-agent was launched.
+REV-001 preserves Claude round 1 and opens round 2 for the bounded fixes.
+No round-2 verdict is presumed. No Claude process or sub-agent was launched.

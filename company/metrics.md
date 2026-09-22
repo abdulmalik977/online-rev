@@ -7,6 +7,7 @@ SQLite metrics stores date, name, value, and unit. Seed values are zero, not tra
 Pipeline: emails_sent, replies, sample_views, paid (daily counts).
 Revenue: revenue (daily amount by currency).
 Daily quota: reserved execution credits in runs / quota_budget in agents/<agent>.md.
-Credits are configured budget units; provider-quota enforcement requires a metered adapter.
+One credit is one CLI-reported turn; tokens are logged for calibration.
+Claude/Codex turn granularity differs; rolling provider windows remain a residual risk.
 Failed and interrupted launches retain their reservation conservatively.
 Report days and quota resets use Asia/Riyadh (fixed UTC+03:00); timestamps use UTC.

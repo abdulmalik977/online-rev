@@ -12,7 +12,7 @@ from unittest.mock import patch
 from common import ROOT, add_approval, database, local_day, now, quota, read_front, stamp, write_front
 from daily_report import SECTIONS, generate, send_report
 from run_agent import reserve, run
-from watchdog import scan
+from watchdog import scan, record_counter
 
 
 class OperationTests(unittest.TestCase):
@@ -20,7 +20,7 @@ class OperationTests(unittest.TestCase):
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
         self.root = Path(temp.name)
-        for directory in ("company", "agents", "approvals", "tasks"):
+        for directory in ("company", "agents", "approvals", "tasks", "reviews"):
             shutil.copytree(ROOT / directory, self.root / directory)
         self.env = patch.dict(os.environ, {}, clear=True)
         self.env.start()
@@ -73,7 +73,8 @@ class OperationTests(unittest.TestCase):
             self.assertEqual(conn.execute("SELECT COUNT(*) FROM runs").fetchone()[0], 0)
 
     def test_missing_adapter_fails_closed_and_logs(self):
-        self.assertEqual(run("codex", "execute", self.root), 1)
+        with patch("run_agent.shutil.which", return_value=None):
+            self.assertEqual(run("codex", "execute", self.root), 1)
         self.assertEqual(len(list((self.root / "logs/runs").glob("codex-*.md"))), 1)
         with database(self.root) as conn:
             self.assertEqual(quota(conn, self.root, "codex", now())[0], 0)
@@ -158,6 +159,75 @@ class OperationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             scan(self.root)
         self.assertEqual(run("codex", "execute", self.root), 1)
+
+
+    def test_claude_adapter_with_fake_cli(self):
+        fake = self.root / "fake_claude.py"
+        fake.write_text("import sys,json\nassert sys.argv[1:]==['-p','--output-format','json','--max-turns','30']\n"
+                        "assert 'current-goal.md' in sys.stdin.read()\n"
+                        "print(json.dumps({'num_turns':3,'usage':{'input_tokens':17,'output_tokens':9},'result':'done'}))", encoding="utf-8")
+        os.environ["CLAUDE_CLI_COMMAND"] = json.dumps([sys.executable, str(fake)])
+        os.environ["CLAUDE_METERED_COMMAND"] = json.dumps([sys.executable, str(ROOT / "scripts/adapters/claude_adapter.py")])
+        self.assertEqual(run("claude", "plan", self.root), 0)
+        log = next((self.root / "logs/runs").glob("claude-*.md")).read_text(encoding="utf-8")
+        self.assertIn('"usage": 3', log)
+        self.assertIn('"input_tokens": 17', log)
+        fake.write_text("print('{\"result\":\"missing usage\"}')", encoding="utf-8")
+        self.assertEqual(run("claude", "review", self.root), 1)
+        with database(self.root) as conn:
+            self.assertEqual(quota(conn, self.root, "claude", now())[0], 60)
+
+    def test_codex_adapter_with_fake_cli(self):
+        fake = self.root / "fake_codex.py"
+        events = [{"type": "turn.started"}, {"type": "item.completed", "item": {"type": "agent_message", "text": "done"}},
+                  {"type": "turn.completed", "usage": {"input_tokens": 23, "cached_input_tokens": 2, "output_tokens": 5}}]
+        fake.write_text("import sys\nassert sys.argv[1:]==['exec','--json','--sandbox','workspace-write','-']\n"
+                        "assert 'current-goal.md' in sys.stdin.read()\nprint(" + repr("\n".join(json.dumps(e) for e in events)) + ")", encoding="utf-8")
+        os.environ["CODEX_CLI_COMMAND"] = json.dumps([sys.executable, str(fake)])
+        os.environ["CODEX_METERED_COMMAND"] = json.dumps([sys.executable, str(ROOT / "scripts/adapters/codex_adapter.py")])
+        self.assertEqual(run("codex", "execute", self.root), 0)
+        log = next((self.root / "logs/runs").glob("codex-*.md")).read_text(encoding="utf-8")
+        self.assertIn('"usage": 1', log)
+        self.assertIn('"output_tokens": 5', log)
+        fake.write_text("print('{\"type\":\"turn.completed\"}')", encoding="utf-8")
+        self.assertEqual(run("codex", "execute", self.root), 1)
+        with database(self.root) as conn:
+            self.assertEqual(quota(conn, self.root, "codex", now())[0], 40)
+
+    def counter_task(self):
+        task, _ = read_front(self.root / "tasks/TASK-001.md")
+        task.update(id="TASK-COUNTER", attempts=0, review_round=0, status="review")
+        path = self.root / "tasks/TASK-COUNTER.md"
+        write_front(path, task, "Counter fixture")
+        return path
+
+    def test_counter_increments_persist_and_tampering_is_reported(self):
+        path = self.counter_task()
+        record_counter("TASK-COUNTER", "attempt", "Start work", root=self.root)
+        task, body = read_front(path)
+        self.assertEqual(task["attempts"], 1)
+        self.assertEqual(record_counter("TASK-COUNTER", "review", "Fix findings", "changes", self.root)["status"], "doing")
+        task, body = read_front(path)
+        self.assertEqual(task["review_round"], 1)
+        self.assertTrue((self.root / "reviews/REV-002.md").exists())
+        task["attempts"] = 0
+        write_front(path, task, body)
+        self.assertIn("TASK-COUNTER", scan(self.root)["protocol_violations"])
+        self.assertEqual(read_front(path)[0]["status"], "blocked")
+        with self.assertRaises(ValueError):
+            record_counter("TASK-COUNTER", "attempt", "Bypass", root=self.root)
+
+    def test_third_recorded_review_triggers_rule_one(self):
+        path = self.counter_task()
+        for index in range(3):
+            task, body = read_front(path)
+            task["status"] = "review"
+            write_front(path, task, body)
+            record_counter("TASK-COUNTER", "review", f"Round {index + 1}", "changes", self.root)
+        self.assertEqual(read_front(path)[0]["review_round"], 3)
+        self.assertIn("TASK-COUNTER", scan(self.root)["loops"])
+        self.assertEqual(read_front(path)[0]["status"], "blocked")
+        self.assertIn("LOOP-TASK-COUNTER", (self.root / "approvals/pending.md").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
