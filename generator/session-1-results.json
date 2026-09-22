@@ -1,0 +1,45 @@
+{
+  "count": 10,
+  "preview_date": "2026-09-22",
+  "as_of": "2026-09-22",
+  "expires": "2026-10-06",
+  "expired": false,
+  "median_render_seconds": 7.110001752153039e-05,
+  "render_seconds": [
+    0.0003152000717818737,
+    0.0001281000440940261,
+    9.929994121193886e-05,
+    8.000002708286047e-05,
+    7.379997987300158e-05,
+    6.690004374831915e-05,
+    6.350001785904169e-05,
+    6.210000719875097e-05,
+    6.609992124140263e-05,
+    6.84000551700592e-05
+  ],
+  "total_build_seconds": 0.012610400095582008,
+  "measurement": "Local validation/render/write only; excludes research, QA, deployment and maintenance",
+  "live_urls_verified": 0,
+  "checkout_configured": false,
+  "maps_checked": 0,
+  "session": 1,
+  "session_limit": 3,
+  "unit_tests_passed": 9,
+  "layout_checks": 20,
+  "layout_failures": 0,
+  "viewports": [
+    390,
+    1440
+  ],
+  "visual_review": "Desktop and true 390px mobile screenshots inspected; no clipping after viewport emulation",
+  "archive_pages": 10,
+  "archive_files": 14,
+  "published": false,
+  "remaining": [
+    "TASK-003 offer corrections",
+    "Ten direct matching Google Maps inspections",
+    "Eligible commercial host and verified live deployment",
+    "Scheduled expiry replacement on host",
+    "Claude review"
+  ]
+}
