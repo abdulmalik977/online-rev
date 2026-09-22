@@ -10,7 +10,7 @@ No recurring subscription, outreach, calls, messages, or new infrastructure.
 
 Outscraper's published schedule offers the first 500 listing records free and
 $3/1,000 thereafter; site/contact enrichment separately lists 500 free domains and
-$3/1,000 thereafter. For 700 of each, estimated usage is $1.20 if both free allowances
+$3/1,000 thereafter. For 1,000 of each (envelope raised per validation rev 2 §5), estimated usage is $1.20 if both free allowances
 are available, or $4.20 if already exhausted. These are usage estimates, not a
 confirmed checkout/top-up amount. [Outscraper pricing](https://outscraper.com/pricing/).
 

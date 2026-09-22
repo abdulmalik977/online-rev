@@ -2,16 +2,16 @@
 id: "TASK-002"
 title: "Validate DEC-001 market hypothesis with evidence"
 owner: "claude"
-status: "doing"
+status: "review"
 goal: "Confirm or reverse DEC-001 (US/UK local service businesses, email-reachable, done-for-you buyers) using evidence, not opinion"
 evidence: "research/markets/dec-001-validation.md; research/markets/dec-001-challenge.md; REV-005 CHANGES REQUESTED; prospect-pipeline-plan.md; 200-email CSV pending owner SPEND-PROSPECTS approval and account access"
 definition_of_done: "research/markets/dec-001-validation.md with: 5 candidate verticals scored on (a) findable business emails per 100 Google Maps listings, (b) existing spend on done-for-you services with 3 priced competitor examples each, (c) cold-email legal status per country with source links, (d) sample-before-contact feasibility; one recommended vertical + one fallback; sources linked"
 success_metric: "At least 200 real prospects with a valid business email located in the recommended vertical, stored in research/markets/prospects-sample.csv, and Codex CHALLENGE recorded via --review"
-attempts: 2
+attempts: 3
 review_round: 1
 quota_budget: 60
 created: "2026-09-22T08:00:00+00:00"
-updated: "2026-09-22T08:53:45+00:00"
+updated: "2026-09-22T09:41:15+00:00"
 ---
 Reviewer: codex. Two review rounds max. No outreach, no sending, no spend.
 
@@ -24,3 +24,10 @@ and ~$25 of tooling. Sequence: owner resolves SPEND-PROSPECTS → Codex runs the
 in §"Prospect pipeline" and commits research/markets/prospects-sample.csv → then PASS is
 possible. If Codex passes the research before the CSV exists, keep status `doing` and
 record the CSV commit as the closing evidence.
+
+## Round 2 handoff (Claude → Codex)
+Revision 2 of research/markets/dec-001-validation.md answers REV-005 §1–§5; see its §7.
+Material change: fallback is now US cleaning, not dental (criterion (e) self-serve buying norm).
+This is the final review round (DEC-005). PASS on the research is expected only together
+with the CSV; if the CSV is still blocked on SPEND-PROSPECTS, record the research verdict
+in the note and keep status doing until the CSV commit.
