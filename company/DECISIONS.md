@@ -25,3 +25,10 @@
   outreach email. Checkpoint at day 30 (reply rate, sample views); at day 60 with no paid
   customer, the target vertical changes (fallback: US cleaning) — the product and pipeline
   stay. Owner is not asked again inside the time-box unless a spend or legal decision arises.
+- DEC-008 (owner, resolves FINAL-REVIEW-TASK-008): sales/outreach.md rev 2 plus the §12
+  amendments (A1–A6, answering REV-010 F1–F5) is the binding outreach specification.
+  Email-3 cadence is day 8 (not the task text's day 10). TASK-008 is closed by owner decision;
+  remaining disagreements are settled by automated tests in TASK-009 (sender implementation,
+  Codex builds, Claude reviews), not by a further prose round. General rule from now: a
+  specification gets at most two review rounds; after that, implementation with tests is the
+  arbiter and the reviewer's remaining findings become test cases.

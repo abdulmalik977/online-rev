@@ -2,7 +2,7 @@
 id: "TASK-LOOP"
 title: "DEMO: deliberately looping review fixture"
 owner: "codex"
-status: "blocked"
+status: "killed"
 goal: "Demonstrate automatic loop blocking"
 evidence: "Seed fixture, not commercial activity"
 definition_of_done: "Watchdog changes status to blocked and queues owner escalation"
@@ -16,3 +16,5 @@ updated: "2026-09-22T06:19:09+00:00"
 Intentional test task. Retained as blocked evidence; do not execute.
 
 Watchdog 2026-09-22T06:19:09+00:00: review_round > 2; owner decision required
+
+Owner disposition 2026-09-23: fixture killed (DEC-008 package); it had proven the loop rule and was occupying an open-task slot.

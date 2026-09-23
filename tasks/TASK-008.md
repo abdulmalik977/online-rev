@@ -2,7 +2,7 @@
 id: "TASK-008"
 title: "Outreach sequence, compliance kit and reply handling rules"
 owner: "claude"
-status: "blocked"
+status: "done"
 goal: "Write everything the sending system needs so that Codex can wire it without interpretation: the 3-email sequence with the preview link, CAN-SPAM footer, unsubscribe handling, suppression list rules, sending schedule within DEC-003, and reply-classification rules with canned responses"
 evidence: "sales/outreach.md revision 2 at 7576955; REV-010 final CHANGES; sales/outreach-review-round2.md all 20 cases; sales/qa/task008-rev2-check.py and task008-rev2-results.json; FINAL-REVIEW-TASK-008 pending owner disposition"
 definition_of_done: "sales/outreach.md with: email 1 (preview), email 2 (day 3 nudge), email 3 (day 10 expiry notice), subject lines (3 variants each for A/B), footer block with physical address placeholder and unsubscribe line, suppression rules (unsubscribe, bounce, reply-negative, role addresses), warm-up schedule for new mailboxes (weeks 1-3), daily caps, reply classes (interested / question / not-now / negative / auto-reply / bounce) each with a canned reply or action, escalation rules to the owner (legal threats, refund requests), and the metrics definitions for the daily report pipeline line"
@@ -29,3 +29,6 @@ sales/outreach.md revision 2: section 11 maps R01-R12; section 9 gives expected 
 REV-010 records CHANGES against 7576955. All twenty section-9 cases checked: fourteen consistent under stated fixture conditions, five mismatched/contradictory (4,6,7,8,10), one partial (20). Keyword/FAQ/calendar probes are reproducible in sales/qa; this is a specification audit, not production sender testing.
 
 F1-F5 and bounded corrections are in sales/outreach-review-round2.md. Per DEC-005, status is blocked for FINAL-REVIEW-TASK-008 owner disposition: no third review or autonomous Claude retry. Codex did not call --attempt; attempts remains 2 from Claude revision-2 patch. No sending or other task execution.
+
+## Owner closure
+Closed by DEC-008 after two review rounds (REV-009, REV-010). Specification = rev 2 + section 12 amendments A1-A6. Remaining findings become automated tests in TASK-009.
