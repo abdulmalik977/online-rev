@@ -264,3 +264,7 @@ Tests, not prose, are the arbiter from here: TASK-009 implements §§0–12 with
 - A6 amendment: the owner-response clock for every queue item starts at inbound receipt time; the later(payment, confirmation) clock applies only to launch and automatic-refund eligibility (offer rev 2 §4).
 - A6 amendment: when `Message-ID` is absent, the dedup key is `sha256(mailbox_id, provider_uid if available, canonical full message bytes)`; never a body prefix.
 Tests in `sender/tests/test_spec_conflicts.py` are the reference for these three rules and must be green once implemented per this section.
+
+**A8 — From Claude's independent review of TASK-009 (REV-011), binding; enforced by the go-live gate (§8.5).**
+- Whole-body comparisons (`stop`, `yes`, `ok`, etc.) are made after stripping leading/trailing whitespace and punctuation (`.,!?;:"'`), so `Stop!` and `STOP.` are OPT_OUT. New fixtures: 21 `Stop!` → OPT_OUT; 22 `Sue will call you` → LEGAL (accepted false-positive risk; owner queue resolves).
+- Configuration is re-validated inside every send transaction (not only at process start), so a config edit while the sender runs cannot produce an email with an empty postal address or an unresolved placeholder. New fixture 23: config mutated after start → dispatch refused, nothing accepted by SMTP.
