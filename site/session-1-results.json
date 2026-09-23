@@ -1,0 +1,80 @@
+{
+  "session": 1,
+  "session_limit": 2,
+  "at": "2026-09-23T14:17:13+00:00",
+  "task_status": "doing",
+  "review_patch_commit": "3123819",
+  "task009": "PASS REV-011, review_round 1, attempts unchanged at 2",
+  "a8_fixtures_passed": [
+    21,
+    22,
+    23
+  ],
+  "a8_tests_passed": 6,
+  "sender_tests_passed": 80,
+  "order_tests_passed": 12,
+  "operations_tests_passed": 18,
+  "generator_tests_passed": 11,
+  "watchdog_tests_passed": 7,
+  "skipped": 0,
+  "expected_failures": 0,
+  "visual_checks": 12,
+  "visual_failures": 0,
+  "viewports": [
+    320,
+    390,
+    430,
+    1440
+  ],
+  "local_load_event_max_ms": 8.600000023841858,
+  "lighthouse": {
+    "version": "13.5.0",
+    "url": "http://127.0.0.1:8777/",
+    "form_factor": "mobile",
+    "throttling": "simulate",
+    "scores": {
+      "performance": 100,
+      "accessibility": 100,
+      "best-practices": 100
+    },
+    "fcp_ms": 751.2179000000001,
+    "lcp_ms": 751.2179000000001,
+    "cls": 0,
+    "limitation": "Simulated mobile against loopback; not a hosted performance claim"
+  },
+  "public_bytes": 20927,
+  "public_sha256": {
+    "_headers": "dfa66f8f53a43762c92193491b8823a1a75db78059a84f73a25cf073b56a711e",
+    "index.html": "6f3ab3023619bc8dd6c6ccf169ae143826dfb3b720ab281286f478be790612c0",
+    "privacy.html": "afc382aa8ce21f987623129dd4e4532d06761aedd473d212b3c183e84a03b8d1",
+    "style.css": "b5f051877956031e00d71365960677c0385ef86f63c4668d4f74639fd2bf14ab",
+    "unsubscribe.html": "e839038bed5ed5c44b9b56bfce50b16ebdb58fe74414a3e8e358a4182ca995ca"
+  },
+  "archive_sha256": "7839db847b0aba05d4241ed15d806c559240ee08820ce9f6182b1d51f20cd249",
+  "gate_exit_code": 2,
+  "gate_output": [
+    "RED 1 SETUP-EMAIL and mailbox authentication",
+    "RED 2 Complete Houston company configuration",
+    "RED 3 Commercial host, ten live previews, rehearsed and scheduled expiry",
+    "RED 4 Self-serve checkout 200 and enabled order button",
+    "RED 5 Suppression, role filter, 20+7 cases, A8 (21-23) and FAQ",
+    "RED 6 External opt-out and signed one-click POST",
+    "RED 7 Legal escalation with zero outgoing mail",
+    "RED 8 Pilot clock excludes tests and warm-up",
+    "RED TASK-009 real sending disabled",
+    "GREEN A8 fixture 21 Stop! is OPT_OUT",
+    "GREEN A8 fixture 22 Sue will call you is LEGAL",
+    "GREEN A8 fixture 23 config edit prevents SMTP acceptance",
+    "RED TASK-007 complete identity and provider checkout",
+    "RED TASK-007 signed real provider adapter",
+    "RED TASK-007 hosted landing page and mobile performance",
+    "RED TASK-007 form delivery and abuse controls",
+    "RED TASK-007 welcome, cancellation, refund execution and weekly export",
+    "RED TASK-007 independent Claude PASS"
+  ],
+  "real_payments": 0,
+  "real_messages_sent": 0,
+  "live_urls_verified": 0,
+  "order_demo": "signed synthetic payment -> authenticated fixture confirmation -> prepared local customer bundle",
+  "remaining": "Session 2 local operational paths and maintenance trial; real identity, hosting, provider, SMTP, external verification and independent Claude review are not complete"
+}

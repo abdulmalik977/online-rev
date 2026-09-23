@@ -1,0 +1,10 @@
+{
+  "company": "[Company name]",
+  "postal_address": "[Postal address]",
+  "support_email": "support@example.invalid",
+  "public_base_url": "https://example.invalid",
+  "checkout_base_url": "",
+  "contact_form_base_url": "",
+  "customer_base_url": "",
+  "us_federal_holidays": []
+}

@@ -50,7 +50,7 @@ def matches(body, words):
 def flags(body):
     body = ' '.join(body.lower().split())
     found = {name for name in ('OPT_OUT','LEGAL','REFUND') if matches(body, WORDS[name])}
-    if body == 'stop':
+    if body.strip(" .,!?;:\"'") == 'stop':
         found.add('OPT_OUT')
     spans = []
     for name in ('NEGATIVE','NOT_NOW'):
@@ -66,7 +66,7 @@ def flags(body):
     for name in ('INTERESTED','CALL'):
         if matches(reduced, WORDS[name]):
             found.add(name)
-    if reduced in {'yes','yes please','ok','okay','sure'}:
+    if reduced.strip(" .,!?;:\"'") in {'yes','yes please','ok','okay','sure'}:
         found.add('INTERESTED')
     if '?' in reduced:
         found.add('QUESTION')

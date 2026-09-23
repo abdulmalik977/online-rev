@@ -4,14 +4,14 @@ title: "Sender and inbox handler implementing sales/outreach.md (tests are the a
 owner: "codex"
 status: "done"
 goal: "Implement the outreach scheduler, send transaction, suppression, opt-out endpoint, inbound classifier and owner queue exactly per sales/outreach.md sections 0-12, with automated tests that encode every fixture; disagreements with the spec are raised as failing tests plus a one-line proposal, not prose rounds"
-evidence: "Owner-approved A7 commit 89f4a64; sender/session-2-results.json; sender/REVIEW-HANDOFF.md; all 74 sender tests pass including the 3 reference regressions, 20 fixtures and 7 extra cases; operations 18/18 and watchdog 7/7; awaiting independent Claude code review; no live sending"
+evidence: "Owner-approved A7 commit 89f4a64; sender/session-2-results.json; sender/REVIEW-HANDOFF.md; all 74 sender tests pass including the 3 reference regressions, 20 fixtures and 7 extra cases; operations 18/18 and watchdog 7/7; Claude PASS REV-011 at d103ef3; A8 follow-up is tracked in TASK-007; no live sending"
 definition_of_done: "sender/ package (Python stdlib + smtplib/imaplib; SQLite tables: prospects, sends, inbound, suppression, queue) with: scheduler (Chicago calendar, holidays, slots, day 0/3/8, expiry recheck), send transaction with intent rows and IMAP reconciliation, suppression with shared-domain rule, opt-out page GET/POST + RFC 8058 endpoint, classifier (header origin signals, quote stripping, A1 order), FAQ matcher, templates, owner queue writer, metrics exporter for daily_report; fake SMTP/IMAP in tests; no real credentials; go-live gate script (section 8) that prints each check"
 success_metric: "All 20 section-9 fixtures (as amended by A1) plus the 7 extra cases in section 12 pass as automated tests; calendar tests for Tue/Wed/Thu starts and a holiday collision; opt-out POST test; SMTP-timeout-then-IMAP-found test; Claude PASS via --review after running the suite independently"
 attempts: 2
 review_round: 1
 quota_budget: 60
 created: "2026-09-23T08:20:00+00:00"
-updated: "2026-09-23T13:52:16+00:00"
+updated: "2026-09-23T14:17:13+00:00"
 ---
 At most 3 sessions. Reviewer: claude. No real sending; the go-live gate stays red until
 SETUP-EMAIL, SETUP-HOSTING, checkout and config are resolved by the owner.
@@ -33,3 +33,6 @@ Applied a7-amendment.diff with git apply and pushed commit 89f4a64 before implem
 The original three reference assertions now pass without weakening, skipping or expectedFailure. Full sender suite: 74/74, including all 20 section-9 fixtures, 7 extra cases and 16 new A7 checks. Regression operations: 18/18; watchdog: 7/7. Tests cover absent/unavailable Sent after days, late proof, explicit reconciliation, retry ceiling, reopening queue projection, receipt clock across holidays/DST, legacy pending deadlines and complete MIME identity. See sender/session-2-results.json and sender/REVIEW-HANDOFF.md.
 
 Status is review for Claude's independent code decision via --review TASK-009; review_round stays 0 until that decision. One session remains for review fixes. No self-review or PASS. Launch gate remains RED; no accounts, real sending, deployment, TASK-005 collection or TASK-006 attempt.
+
+## Review outcome
+Claude independently passed round 1 in REV-011; task is done. Owner directed the three A8 fixtures into TASK-007. The session-2 review handoff above is historical, not an outstanding TASK-009 review.

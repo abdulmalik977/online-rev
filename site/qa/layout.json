@@ -1,0 +1,138 @@
+[
+  {
+    "viewport": 320,
+    "page": "index.html",
+    "ready": "complete",
+    "path": "/index.html",
+    "width": 320,
+    "scroll": 320,
+    "checkout": true,
+    "heading": "Good at your trade.Look the partonline.",
+    "load_ms": 8.600000023841858,
+    "cookies": ""
+  },
+  {
+    "viewport": 320,
+    "page": "privacy.html",
+    "ready": "complete",
+    "path": "/privacy.html",
+    "width": 320,
+    "scroll": 320,
+    "heading": "Privacy",
+    "load_ms": 7,
+    "cookies": ""
+  },
+  {
+    "viewport": 320,
+    "page": "unsubscribe.html",
+    "ready": "complete",
+    "path": "/unsubscribe.html",
+    "width": 320,
+    "scroll": 320,
+    "heading": "Email preferences",
+    "load_ms": 5,
+    "cookies": ""
+  },
+  {
+    "viewport": 390,
+    "page": "index.html",
+    "ready": "complete",
+    "path": "/index.html",
+    "width": 390,
+    "scroll": 390,
+    "checkout": true,
+    "heading": "Good at your trade.Look the partonline.",
+    "load_ms": 6.200000047683716,
+    "cookies": ""
+  },
+  {
+    "viewport": 390,
+    "page": "privacy.html",
+    "ready": "complete",
+    "path": "/privacy.html",
+    "width": 390,
+    "scroll": 390,
+    "heading": "Privacy",
+    "load_ms": 4.899999976158142,
+    "cookies": ""
+  },
+  {
+    "viewport": 390,
+    "page": "unsubscribe.html",
+    "ready": "complete",
+    "path": "/unsubscribe.html",
+    "width": 390,
+    "scroll": 390,
+    "heading": "Email preferences",
+    "load_ms": 4.300000071525574,
+    "cookies": ""
+  },
+  {
+    "viewport": 430,
+    "page": "index.html",
+    "ready": "complete",
+    "path": "/index.html",
+    "width": 430,
+    "scroll": 430,
+    "checkout": true,
+    "heading": "Good at your trade.Look the partonline.",
+    "load_ms": 6.799999952316284,
+    "cookies": ""
+  },
+  {
+    "viewport": 430,
+    "page": "privacy.html",
+    "ready": "complete",
+    "path": "/privacy.html",
+    "width": 430,
+    "scroll": 430,
+    "heading": "Privacy",
+    "load_ms": 5.200000047683716,
+    "cookies": ""
+  },
+  {
+    "viewport": 430,
+    "page": "unsubscribe.html",
+    "ready": "complete",
+    "path": "/unsubscribe.html",
+    "width": 430,
+    "scroll": 430,
+    "heading": "Email preferences",
+    "load_ms": 4.699999928474426,
+    "cookies": ""
+  },
+  {
+    "viewport": 1440,
+    "page": "index.html",
+    "ready": "complete",
+    "path": "/index.html",
+    "width": 1440,
+    "scroll": 1425,
+    "checkout": true,
+    "heading": "Good at your trade.Look the partonline.",
+    "load_ms": 7.099999904632568,
+    "cookies": ""
+  },
+  {
+    "viewport": 1440,
+    "page": "privacy.html",
+    "ready": "complete",
+    "path": "/privacy.html",
+    "width": 1440,
+    "scroll": 1425,
+    "heading": "Privacy",
+    "load_ms": 5.600000023841858,
+    "cookies": ""
+  },
+  {
+    "viewport": 1440,
+    "page": "unsubscribe.html",
+    "ready": "complete",
+    "path": "/unsubscribe.html",
+    "width": 1440,
+    "scroll": 1440,
+    "heading": "Email preferences",
+    "load_ms": 6.200000047683716,
+    "cookies": ""
+  }
+]

@@ -195,8 +195,13 @@ class Engine:
     def dispatch(self,prospect_id,number,at,transport,service_job=None):
         if not getattr(transport,'offline',False):
             raise PermissionError('TASK-009 has no live sending capability')
+        from .gate import validate
         conn=self.store.conn
         with self.store.transaction():
+            try:
+                validate(self.config)
+            except (ValueError,TypeError,KeyError,AttributeError):
+                return 'invalid_config'
             p=self.store.get(prospect_id)
             job=service_job or str(number)
             row=conn.execute('SELECT * FROM sends WHERE prospect_id=? AND email_no=?',(prospect_id,job)).fetchone()
@@ -252,6 +257,11 @@ class Engine:
         # The committed intent survives process loss. A new write lock serializes
         # inbound mutations with this final send-time check and fake transport.
         with self.store.transaction():
+            try:
+                validate(self.config)
+            except (ValueError,TypeError,KeyError,AttributeError):
+                conn.execute("UPDATE sends SET status='failed',updated=? WHERE id=?",(stamp(at),send_id))
+                return 'invalid_config'
             p=self.store.get(prospect_id)
             if not service_job and (p['state'] not in {'queued','active'} or self.store.suppressed(p['email']) or conn.execute('SELECT 1 FROM orders WHERE prospect_id=?',(prospect_id,)).fetchone()):
                 conn.execute("UPDATE sends SET status='failed',updated=? WHERE id=?",(stamp(at),send_id))

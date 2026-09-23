@@ -41,7 +41,7 @@ def checks(config=None,evidence=None):
       ('2 Complete Houston company configuration',valid),
       ('3 Commercial host, ten live previews, rehearsed and scheduled expiry',all(evidence.get(k) is True for k in ('commercial_host','ten_live_previews','remote_expiry_rehearsal','expiry_scheduled'))),
       ('4 Self-serve checkout 200 and enabled order button',evidence.get('checkout_status')==200 and evidence.get('order_button_enabled') is True),
-      ('5 Suppression, role filter, 20+7 cases and FAQ',all(evidence.get(k) is True for k in ('suppression_ready','role_filter','acceptance_20','extra_7','faq_8','no_unresolved_spec_tests'))),
+      ('5 Suppression, role filter, 20+7 cases, A8 (21-23) and FAQ',all(evidence.get(k) is True for k in ('suppression_ready','role_filter','acceptance_20','extra_7','faq_8','no_unresolved_spec_tests','a8_21','a8_22','a8_23'))),
       ('6 External opt-out and signed one-click POST',all(evidence.get(k) is True for k in ('external_optout','direct_post','post_no_session','second_send_refused')) and len(passed)>=3),
       ('7 Legal escalation with zero outgoing mail',evidence.get('legal_escalation') is True),
       ('8 Pilot clock excludes tests and warm-up',evidence.get('pilot_clock_tested') is True),

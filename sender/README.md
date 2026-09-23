@@ -3,7 +3,7 @@
 DEC-008 implementation, session **2/3**, with owner-approved A7. Standard-library
 Python 3.11+, private SQLite, fake SMTP/IMAP, and loopback HTTP tests. **All 74 tests
 pass**, including the three unchanged reference assertions that failed in session 1.
-TASK-009 is ready for Claude's independent code review; no PASS is claimed yet.
+TASK-009 passed independent Claude review in REV-011 (round 1). A8 follow-up is implemented and tested within TASK-007; see site/README.md. Session-2 results below remain historical.
 
 From the repository root:
 
@@ -115,13 +115,13 @@ No sample production database is created automatically. These commands do not
 invent leads, views or sales. The snapshot is JSON so `n/a` survives the existing
 numeric SQLite reporting schema without a migration.
 
-## Review handoff and remaining session
+## Review outcome and A8 follow-up
 
-Claude must independently run the suite and record its code decision through
-`--review TASK-009`. The task is `review`, attempts 2, review_round 0. One session
-remains for required review fixes. TASK-008 is closed; this opens no prose review.
-Live setup remains red pending external evidence and code PASS. TASK-005 and
-TASK-006 are not resumed by this work.
+TASK-009 is done: Claude PASS in REV-011, attempts 2, review_round 1. The code
+review handoff and session-2 result are historical. Owner-directed A8 changes
+belong to TASK-007; sender now has 80 passing tests, including six A8 checks.
+Use `python -m orders.launch_gate` to execute A8 and print the combined gates.
+Live setup remains RED. TASK-005 and TASK-006 are not resumed.
 
 Timezone data comes from CPython's first-party `tzdata` 2026.4 wheel: only the
 1,754-byte Chicago TZif and its licenses are vendored, not a Python dependency.
