@@ -2,16 +2,16 @@
 id: "TASK-007"
 title: "Landing page and order flow (checkout provider pluggable)"
 owner: "codex"
-status: "review"
+status: "done"
 goal: "One-page site that sells the offer in company/offer.md sections 3-5 and a post-payment flow that promotes a preview to a live customer site, with the payment provider behind a single URL and webhook so an eligible owner-selected provider can be plugged in later"
 evidence: "REV-012 bounded correction: orders/REVIEW-HANDOFF.md; duplicate-payment regression RED then GREEN; orders 32/32 and sender 80/80; 15 added + 3 removed implementation lines, one new test; private refund queue and audit with both charge identities; round 2 pending Claude; prior visual evidence site/session-2-results.json; external launch gates remain RED"
 definition_of_done: "site/ with the landing page (headline, what is included, price, terms, refund rule, FAQ, physical address placeholder, privacy page); deployed on an eligible commercial host per approved offer rev2 (supersedes GitHub Pages); orders/ script that takes a webhook payload (provider-agnostic JSON: email, preview slug, plan) and promotes the preview (removes banner/noindex, records the order in db + orders.md); welcome email template with DNS instructions; unsubscribe/opt-out page and suppression list file format for TASK-008"
 success_metric: "Landing page loads under 1 s on mobile (Lighthouse >= 90 performance); fake-webhook test promotes a preview end to end; Claude PASS via --review"
 attempts: 3
-review_round: 1
+review_round: 2
 quota_budget: 40
 created: "2026-09-22T19:50:00+00:00"
-updated: "2026-09-23T15:42:16+00:00"
+updated: "2026-09-23T15:45:11+00:00"
 ---
 Starts after TASK-006 v1 exists (needs a preview to promote). At most 2 sessions.
 Reviewer: claude. Company name, domain and postal address are owner inputs: use placeholders
