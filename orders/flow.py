@@ -53,6 +53,7 @@ class Orders(Lifecycle):
           CREATE TABLE IF NOT EXISTS orders(id TEXT PRIMARY KEY,slug TEXT NOT NULL UNIQUE REFERENCES previews(slug),email TEXT NOT NULL,
             paid_at TEXT NOT NULL,confirmed_at TEXT,confirmation TEXT,status TEXT NOT NULL,launch_due TEXT,refund_due TEXT,live_at TEXT,live_url TEXT);
           CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY,digest TEXT NOT NULL,order_id TEXT NOT NULL);
+          CREATE TABLE IF NOT EXISTS owner_queue(order_id TEXT PRIMARY KEY,original_order_id TEXT NOT NULL REFERENCES orders(id),class TEXT NOT NULL,created TEXT NOT NULL);
           CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY,at TEXT NOT NULL,action TEXT NOT NULL,order_id TEXT NOT NULL);
           CREATE TABLE IF NOT EXISTS enquiries(id TEXT PRIMARY KEY,slug TEXT NOT NULL,at TEXT NOT NULL,name TEXT NOT NULL,email TEXT NOT NULL,message TEXT NOT NULL,status TEXT NOT NULL);
         ''')
@@ -117,9 +118,17 @@ class Orders(Lifecycle):
                 if (existing['slug'],existing['email'],existing['paid_at'])!=(preview['slug'],email,stamp(paid)):
                     raise ValueError('Order ID conflict')
             else:
-                self.db.execute('INSERT INTO orders(id,slug,email,paid_at,status) VALUES(?,?,?,?,?)',
-                                (event['order_id'],preview['slug'],email,stamp(paid),'awaiting_confirmation'))
-                self.db.execute('INSERT INTO audit(at,action,order_id) VALUES(?,?,?)',(stamp(at),'payment_recorded',event['order_id']))
+                original=self.db.execute('SELECT id FROM orders WHERE slug=?',(preview['slug'],)).fetchone()
+                if original:
+                    queued=self.db.execute('INSERT OR IGNORE INTO owner_queue VALUES(?,?,?,?)',
+                                           (event['order_id'],original['id'],'refund',stamp(at)))
+                    if queued.rowcount:
+                        self.db.execute('INSERT INTO audit(at,action,order_id) VALUES(?,?,?)',(stamp(at),'duplicate_payment',event['order_id']))
+                    event['order_id']=original['id']
+                else:
+                    self.db.execute('INSERT INTO orders(id,slug,email,paid_at,status) VALUES(?,?,?,?,?)',
+                                    (event['order_id'],preview['slug'],email,stamp(paid),'awaiting_confirmation'))
+                    self.db.execute('INSERT INTO audit(at,action,order_id) VALUES(?,?,?)',(stamp(at),'payment_recorded',event['order_id']))
             self.db.execute('INSERT INTO events VALUES(?,?,?)',(event['event_id'],digest,event['order_id']))
             self.db.commit()
         except BaseException:
@@ -251,6 +260,9 @@ class Orders(Lifecycle):
                    'This is a private unsent draft. Cancellation and provider receipt links are not configured.\n')
             target=drafts/(row['id']+'.txt'); temporary=target.with_name(target.name+'.'+uuid.uuid4().hex+'.tmp')
             temporary.write_text(draft,encoding='utf-8'); temporary.replace(target)
+        lines+=['','## Owner refund queue']
+        for item in self.db.execute('SELECT * FROM owner_queue ORDER BY created,order_id'):
+            lines.append(f"- [ ] {item['created']} | class {item['class']} | duplicate {item['order_id']} | original {item['original_order_id']}")
         lines+=['','## Effects requiring reconciliation or retry']
         for effect in self.db.execute("SELECT key,state,attempts FROM effects WHERE state!='done'"):
             lines.append(f"- {effect['key']} | {effect['state']} | attempts {effect['attempts']}")

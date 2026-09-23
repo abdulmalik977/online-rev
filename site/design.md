@@ -46,3 +46,17 @@ Test these operational paths with fakes, crash/timeout replay and a bounded time
 maintenance mix. Recheck mobile layout, mailto and Lighthouse; document actual
 limits, preserve session-1 evidence, and submit status=review at attempts=2,
 review_round=0 for Claude. No self-review, real email/payment or new infrastructure.
+
+
+## REV-012 bounded correction (before code)
+
+The owner explicitly authorizes this correction after the two build sessions.
+Keep the existing signed-event validation and immediate transaction. Before a new
+order insert, find an order for the preview slug. For a second payment, atomically
+record duplicate_payment against its new order ID and one durable owner_queue row
+of class refund containing both order IDs. Project that queue into the existing
+private orders.md. Map the event to the original order and return it, including on
+replay, so a provider adapter can acknowledge success without a second order.
+One regression test must first reproduce the UNIQUE failure, then verify the
+original return value, one order, one refund item, audit identity and replay.
+Limit implementation to <=30 changed lines plus one new test; no provider effect.

@@ -1,8 +1,37 @@
-# TASK-007 - final session code review handoff
+# TASK-007 - round 2 code review handoff
 
-Owner requested submission to `review` after session 2. Attempts: 2/2;
-review_round: 0. Reviewer: Claude. No PASS or review decision is recorded by Codex.
+Status: review for Claude's second and final decision. REV-012 is round-1 CHANGES.
+Owner explicitly authorized its bounded correction after the two build sessions;
+--attempt recorded attempts=3. review_round=1 counts completed decisions, so Claude
+must record the next decision with --review TASK-007. Codex records no self-PASS.
 TASK-009 remains done in REV-011; its counters are unchanged.
+
+## REV-012 correction and fresh evidence
+
+Applied task007-review1.diff with git apply and pushed commit 69f6a00 first.
+The signed payment transaction checks the preview slug before order insertion.
+A second charge records audit action duplicate_payment against the new order ID
+and one durable owner_queue row, class refund, containing duplicate and original
+order IDs. The existing private orders.md projects this owner refund queue.
+Event replay returns the original order, without a second order/welcome or another
+queue/audit entry. This queues owner refund work; it does not execute a refund.
+
+Implementation is 15 added + 3 removed lines in orders/flow.py. One new regression:
+
+```powershell
+python -W error::ResourceWarning -m unittest orders.tests.test_flow.Flow.test_duplicate_payment_queues_refund_and_returns_existing_order -v
+```
+
+Before the fix it failed with sqlite3.IntegrityError: UNIQUE constraint failed:
+orders.slug. After the fix it passes: two distinct order IDs on the same slug,
+original return value, one order, one refund item with both IDs, audit of the new
+ID and no duplicate welcome. It also retries the same event and a fresh event ID
+for the same second charge. The existing conflict test now checks a real order-ID
+conflict instead of expecting the old defect. Full fresh suites: orders 32/32,
+sender 80/80, no skips/expected failures. Use the full-suite commands below.
+
+The remaining sections retain session-2 evidence and its external launch limits;
+visual/generator/operations results below were not rerun for this payment-only fix.
 
 ## Owner-visible change
 

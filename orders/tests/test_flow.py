@@ -2,7 +2,6 @@ from datetime import datetime, timedelta, timezone, date
 import importlib.util
 import json
 from pathlib import Path
-import sqlite3
 import tempfile
 import unittest
 
@@ -70,8 +69,24 @@ class Flow(unittest.TestCase):
         self.pay({**self.event,'event_id':'evt-2'})
         self.assertEqual(self.store.db.execute('SELECT COUNT(*) FROM orders').fetchone()[0],1)
         with self.assertRaises(ValueError): self.pay({**self.event,'email':'wrong@example.invalid'})
-        with self.assertRaises(sqlite3.IntegrityError): self.pay({**self.event,'event_id':'evt-3','order_id':'other-order'})
+        with self.assertRaises(ValueError): self.pay({**self.event,'event_id':'evt-3','paid_at':(AT-timedelta(seconds=1)).isoformat()})
         self.assertEqual(self.store.db.execute('SELECT COUNT(*) FROM events').fetchone()[0],2)
+
+    def test_duplicate_payment_queues_refund_and_returns_existing_order(self):
+        original=self.pay()
+        duplicate={**self.event,'event_id':'evt-2','order_id':'order-2'}
+        self.assertEqual(self.pay(duplicate),original)
+        for event in (duplicate,{**duplicate,'event_id':'evt-3'}):
+            self.assertEqual(self.pay(event),original)
+        self.assertEqual(self.store.db.execute('SELECT COUNT(*) FROM orders').fetchone()[0],1)
+        queue=self.store.db.execute('SELECT class,order_id,original_order_id FROM owner_queue').fetchall()
+        self.assertEqual([tuple(row) for row in queue],[('refund','order-2','order-1')])
+        audit=self.store.db.execute("SELECT order_id FROM audit WHERE action='duplicate_payment'").fetchall()
+        self.assertEqual([row[0] for row in audit],['order-2'])
+        self.assertEqual(self.store.db.execute('SELECT COUNT(*) FROM events').fetchone()[0],3)
+        report=(self.root/'private/orders.md').read_text(encoding='utf-8')
+        self.assertIn('class refund | duplicate order-2 | original order-1',report)
+        self.assertEqual(len(list((self.root/'private/welcome').glob('*.txt'))),1)
 
     def test_expired_payment_and_registration_refused(self):
         late=AT+timedelta(days=15)
