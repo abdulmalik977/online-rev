@@ -11,12 +11,14 @@ import json
 from pathlib import Path
 import re
 import sqlite3
+import uuid
 from string import Template
 from urllib.parse import urlsplit
 
 from sender.calendar import instant, stamp, next_business_day
 from sender.rules import normalize
 from .config import PLAN, AMOUNT, https
+from .lifecycle import Lifecycle
 
 ROOT=Path(__file__).resolve().parents[1]
 ID=re.compile(r'[a-zA-Z0-9_-]{1,100}')
@@ -36,11 +38,12 @@ def business_deadline(start,days,holidays=()):
     return stamp(result)
 
 
-class Orders:
+class Orders(Lifecycle):
     def __init__(self,root,secret,config):
         signature(b'',secret,0)
         self.root=Path(root).resolve(); self.root.mkdir(parents=True,exist_ok=True)
         self.secret=secret; self.config=config
+        self.sender=None
         self.db=sqlite3.connect(self.root/'orders.sqlite',timeout=10)
         self.db.row_factory=sqlite3.Row
         self.db.execute('PRAGMA foreign_keys=ON')
@@ -53,6 +56,7 @@ class Orders:
           CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY,at TEXT NOT NULL,action TEXT NOT NULL,order_id TEXT NOT NULL);
           CREATE TABLE IF NOT EXISTS enquiries(id TEXT PRIMARY KEY,slug TEXT NOT NULL,at TEXT NOT NULL,name TEXT NOT NULL,email TEXT NOT NULL,message TEXT NOT NULL,status TEXT NOT NULL);
         ''')
+        self.init_lifecycle()
 
     def close(self):
         self.db.close()
@@ -104,7 +108,7 @@ class Orders:
             if seen:
                 if seen['digest']!=digest:
                     raise ValueError('Event ID reused with different content')
-                self.db.commit(); return self.get(seen['order_id'])
+                self.db.commit(); self.sync_paid(seen['order_id']); self.project(); return self.get(seen['order_id'])
             preview=self.db.execute('SELECT * FROM previews WHERE slug=?',(event['preview_slug'],)).fetchone()
             if not preview or preview['email']!=email or instant(preview['expires'])<=paid:
                 raise ValueError('Payment has no matching unexpired registered preview/customer')
@@ -120,8 +124,28 @@ class Orders:
             self.db.commit()
         except BaseException:
             self.db.rollback(); raise
+        self.sync_paid(event['order_id'])
         self.project()
         return self.get(event['order_id'])
+
+    def sync_paid(self,order_id):
+        if self.sender is not None:
+            row=self.get(order_id); prospect=self.sender.by_email(row['email'])
+            if prospect is not None:
+                self.bind_sender(order_id,prospect['id'],self.sender)
+
+    def wire_sender(self,engine):
+        self.sender=engine.store
+        def guard(prospect,at):
+            # Read the authoritative paid ledger during both sender transactions.
+            # This closes the crash window between the two SQLite databases.
+            for row in self.db.execute('SELECT * FROM orders WHERE email=?',(prospect['email'],)).fetchall():
+                if row['slug']!=prospect['preview_slug']:
+                    raise ValueError('Paid order preview mismatch; refuse sending')
+                engine.store.paid(row['id'],prospect['id'],row['paid_at'])
+        engine.order_guard=guard
+        for row in self.db.execute('SELECT id FROM orders').fetchall():
+            self.sync_paid(row['id'])
 
     def get(self,order_id):
         row=self.db.execute('SELECT * FROM orders WHERE id=?',(order_id,)).fetchone()
@@ -156,12 +180,17 @@ class Orders:
             self.db.execute('INSERT INTO audit(at,action,order_id) VALUES(?,?,?)',(stamp(at),'customer_confirmed',order_id))
         self.project(); return self.get(order_id)
 
-    def promote(self,order_id):
+    def promote(self,order_id,*,export_only=False):
         row=self.get(order_id)
-        if row['status'] not in {'ready','prepared'}:
+        if row['status'] not in {'ready','prepared','live','cancel_pending'}:
             raise ValueError('Payment, confirmation and corrections must be resolved first')
+        resolved=bool(self.db.execute("SELECT 1 FROM changes WHERE order_id=? AND state='correction'",(order_id,)).fetchone())
+        if not export_only and (not row['confirmed_at'] or (json.loads(row['confirmation'])['corrections'] and not resolved)):
+            raise ValueError('Customer confirmation and implemented corrections required')
+        if export_only and row['status']!='cancel_pending':
+            raise ValueError('Export-only preparation is for cancellation only')
         record=json.loads(self.db.execute('SELECT record FROM previews WHERE slug=?',(row['slug'],)).fetchone()[0])
-        folder=self.root/'customers'/row['slug']
+        folder=self.artifact_folder(order_id)
         # Deterministic files allow recovery after a crash between file writes and DB update.
         folder.mkdir(parents=True,exist_ok=True)
         if folder.is_symlink() or self.root not in folder.resolve().parents:
@@ -172,17 +201,23 @@ class Orders:
         if https(endpoint) and self.config.get('form_delivery_verified') is True:
             action=endpoint.rstrip('/')+'/'+row['slug']
             p=urlsplit(endpoint); form_origin=p.scheme+'://'+p.netloc
-            form=f'''<form method="post" action="{e(action)}"><label>Name <input name="name" maxlength="120" required></label><label>Email <input type="email" name="email" maxlength="254" required></label><label>How can we help? <textarea name="message" maxlength="3000" required></textarea></label><p>Your enquiry will be forwarded to this business. Do not include sensitive information.</p><button class="button" type="submit">Send enquiry</button></form>'''
+            form=f'<p><a class="button" href="{e(action)}">Send an enquiry</a></p><p>Open our contact page to send your details securely to this business.</p>'
         page=Template((ROOT/'orders/customer.html').read_text(encoding='utf-8')).substitute(
             name=e(record['business']),trade='Plumbing &amp; HVAC' if record['category']=='plumbing_hvac' else 'Plumbing',
             style=record['style'],form_origin=e(form_origin,quote=True),form=form,
             phone=f'<a class="button" href="tel:{e(record["phone"])}">Call {e(record["phone"])}</a>' if record['phone'] else '',
-            services=''.join(f'<li><h3>{e(s)}</h3></li>' for s in record['services']),hours='')
+            services=''.join(f'<li><h3>{e(s)}</h3></li>' for s in record['services']),
+            hours='<p>'+e(record['hours'])+'</p>' if record.get('hours') else '',
+            headline=e(record.get('headline','A home that keeps flowing.')),intro=e(record.get('intro',"Explore "+record['business']+"'s services for Houston homes.")),
+            prices='<p>'+e(record['prices'])+'</p>' if record.get('prices') else '',
+            artwork=e(record.get('photo','house.svg')),photo_alt=e(record.get('photo_alt','Original illustration of a house and water pipes')))
         privacy=f'<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Privacy</title><link rel="stylesheet" href="style.css"><main class="wrap section"><h1>Privacy</h1><p>Enquiries are forwarded to {e(record["business"])} using the details you provide. Do not submit sensitive information. This site sets no cookies.</p><a href="./">Back to the website</a></main></html>'
         files={'index.html':page.encode(),'privacy.html':privacy.encode(),
                'style.css':(ROOT/'generator/style.css').read_bytes(),
                'house.svg':(ROOT/'generator/house.svg').read_bytes(),
                '_headers':b'/*\n  Cache-Control: no-cache\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: no-referrer\n'}
+        if record.get('photo'):
+            files[record['photo']]=self._safe_file(self.root/'media'/record['photo']).read_bytes()
         for name,data in files.items():
             target=folder/name
             if target.exists() and (target.is_symlink() or target.read_bytes()!=data):
@@ -190,13 +225,13 @@ class Orders:
             if not target.exists():
                 with target.open('xb') as handle: handle.write(data)
         with self.db:
-            self.db.execute("UPDATE orders SET status='prepared' WHERE id=?",(order_id,))
+            self.db.execute("UPDATE orders SET status=CASE WHEN status IN ('live','cancel_pending') THEN status ELSE 'prepared' END WHERE id=?",(order_id,))
         self.project()
         return folder
 
     def refund_candidates(self,at):
-        return [dict(r) for r in self.db.execute('SELECT * FROM orders WHERE refund_due IS NOT NULL AND live_at IS NULL')
-                if instant(at)>=instant(r['refund_due'])]
+        return [dict(r) for r in self.db.execute('SELECT * FROM orders WHERE refund_due IS NOT NULL')
+                if instant(at)>=instant(r['refund_due']) and (not r['live_at'] or instant(r['live_at'])>instant(r['refund_due']))]
 
     def project(self):
         """Recoverable private projection; database is the authority."""
@@ -214,9 +249,12 @@ class Orders:
                    'Open the DNS settings for your domain, add only those records, and preserve existing MX/email records. '
                    'Until DNS is connected, your site will run on our subdomain. No DNS values are assigned yet.\n\n'
                    'This is a private unsent draft. Cancellation and provider receipt links are not configured.\n')
-            target=drafts/(row['id']+'.txt'); temporary=target.with_suffix('.tmp')
+            target=drafts/(row['id']+'.txt'); temporary=target.with_name(target.name+'.'+uuid.uuid4().hex+'.tmp')
             temporary.write_text(draft,encoding='utf-8'); temporary.replace(target)
-        target=self.root/'orders.md'; temporary=target.with_suffix('.tmp')
+        lines+=['','## Effects requiring reconciliation or retry']
+        for effect in self.db.execute("SELECT key,state,attempts FROM effects WHERE state!='done'"):
+            lines.append(f"- {effect['key']} | {effect['state']} | attempts {effect['attempts']}")
+        target=self.root/'orders.md'; temporary=target.with_name(target.name+'.'+uuid.uuid4().hex+'.tmp')
         temporary.write_text('\n'.join(lines)+'\n',encoding='utf-8'); temporary.replace(target)
 
     def enquiry(self,ident,slug,at,*,name,email,message):
@@ -225,8 +263,10 @@ class Orders:
             raise ValueError('Invalid form identity')
         if not isinstance(name,str) or not 1<=len(name.strip())<=120 or not isinstance(message,str) or not 1<=len(message.strip())<=3000:
             raise ValueError('Invalid enquiry')
+        if any(c in name or c in email for c in ('\r','\n')):
+            raise ValueError('Header injection refused')
         email=normalize(email)
-        if not self.db.execute("SELECT 1 FROM orders WHERE slug=? AND status='prepared'",(slug,)).fetchone():
+        if not self.db.execute("SELECT 1 FROM orders WHERE slug=? AND status IN ('prepared','live','cancel_pending')",(slug,)).fetchone():
             raise ValueError('Customer site not prepared')
         with self.db:
             old=self.db.execute('SELECT * FROM enquiries WHERE id=?',(ident,)).fetchone()

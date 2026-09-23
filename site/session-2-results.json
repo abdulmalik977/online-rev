@@ -1,0 +1,102 @@
+{
+  "session": 2,
+  "session_limit": 2,
+  "at": "2026-09-23T15:29:59+00:00",
+  "task_status": "review",
+  "attempts": 2,
+  "review_round": 0,
+  "owner_change": "Exact concept-request sentence linked with mailto from support_email; present in both checkout states; no sales-page form or external service",
+  "orders_tests_passed": 31,
+  "sender_tests_passed": 80,
+  "operations_tests_passed": 18,
+  "generator_tests_passed": 11,
+  "watchdog_tests_passed": 7,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "expected_failures": 0,
+  "a8_fixtures_passed": [
+    21,
+    22,
+    23
+  ],
+  "local_lifecycle": "Payment -> verified confirmation/corrections -> versioned customer bundle -> simulated receipt -> maintenance -> period-end cancellation/export; late-launch refund, mail reconciliation, paid-ledger guard and enquiry HTTP tested",
+  "maintenance": {
+    "automated": 7,
+    "total": 10,
+    "evidence": "orders/maintenance-trial-results.json",
+    "scope": "Structured, authenticated fixture inputs. Excludes collecting instructions, fact/rights verification, human edits, network deployment and real support labor. 7/10 here is not proof of 70% overall maintenance automation."
+  },
+  "visual": {
+    "checks": 12,
+    "failures": 0,
+    "viewports": [
+      320,
+      390,
+      430,
+      1440
+    ],
+    "mailto_on_mobile": true,
+    "sales_forms": 0,
+    "max_loopback_load_ms": 148.79999995231628
+  },
+  "lighthouse": {
+    "version": "13.5.0",
+    "url": "http://127.0.0.1:8778/",
+    "form_factor": "mobile",
+    "throttling": "simulate",
+    "scores": {
+      "performance": 100,
+      "accessibility": 100,
+      "best-practices": 100
+    },
+    "lcp_ms": 751.4060999999999,
+    "cls": 0,
+    "limitation": "Local simulated mobile measurement, not a public-host result"
+  },
+  "public_bytes": 21252,
+  "public_sha256": {
+    "_headers": "dfa66f8f53a43762c92193491b8823a1a75db78059a84f73a25cf073b56a711e",
+    "index.html": "aa783736d87a97d726c073bb4e546598a8739731be64b101b245a8f5d91bb2e2",
+    "privacy.html": "afc382aa8ce21f987623129dd4e4532d06761aedd473d212b3c183e84a03b8d1",
+    "style.css": "9762c076900f07785648cb80a8e781018837d14f7b39baf1fdaf352b8b9c831f",
+    "unsubscribe.html": "e839038bed5ed5c44b9b56bfce50b16ebdb58fe74414a3e8e358a4182ca995ca"
+  },
+  "archive_sha256": "1ebcb5a9c072bdf11e91e9b0bdb42c169d19da379af75df5c6ff03566b7aec72",
+  "gate_exit_code": 2,
+  "gate_output": [
+    "RED 1 SETUP-EMAIL and mailbox authentication",
+    "RED 2 Complete Houston company configuration",
+    "RED 3 Commercial host, ten live previews, rehearsed and scheduled expiry",
+    "RED 4 Self-serve checkout 200 and enabled order button",
+    "RED 5 Suppression, role filter, 20+7 cases, A8 (21-23) and FAQ",
+    "RED 6 External opt-out and signed one-click POST",
+    "RED 7 Legal escalation with zero outgoing mail",
+    "RED 8 Pilot clock excludes tests and warm-up",
+    "RED TASK-009 real sending disabled",
+    "GREEN A8 fixture 21 Stop! is OPT_OUT",
+    "GREEN A8 fixture 22 Sue will call you is LEGAL",
+    "GREEN A8 fixture 23 config edit prevents SMTP acceptance",
+    "RED TASK-007 complete identity and provider checkout",
+    "RED TASK-007 signed real provider adapter",
+    "RED TASK-007 hosted landing page and mobile performance",
+    "RED TASK-007 form delivery and abuse controls",
+    "RED TASK-007 welcome, cancellation, refund execution and weekly export",
+    "RED TASK-007 authoritative paid ledger wired into every sender transaction",
+    "RED TASK-007 scheduled lifecycle and monthly analytics delivery",
+    "RED TASK-007 independent Claude PASS"
+  ],
+  "real_payments": 0,
+  "real_messages_sent": 0,
+  "real_refunds": 0,
+  "live_urls_verified": 0,
+  "outstanding_external_acceptance": [
+    "real company/mailbox/postal identity",
+    "eligible provider and verified native webhook/receipt links",
+    "commercial hosting/subdomain/DNS",
+    "external SMTP/optout and customer form/proxy delivery",
+    "scheduled lifecycle/expiry/export",
+    "hosted mobile performance",
+    "independent Claude review"
+  ]
+}

@@ -23,3 +23,26 @@ order flow; it cannot honestly demonstrate a hosted launch, live payment, delive
 or a real refund without those inputs. No new infrastructure task is created.
 
 Source: https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits
+
+
+## Session 2 plan (before code; final implementation session)
+
+Use support_email from the one company config for the exact owner-requested
+concept-request mailto line below checkout; keep it in both checkout states and
+add no sales-page form, script or external service. The example remains explicitly
+reserved .invalid until the owner supplies real identity.
+
+Complete the local lifecycle with verified correction/maintenance changes,
+versioned customer artifacts, explicit launch receipts, cancellation at the
+provider-confirmed paid-period end, allowlisted ZIP exports, weekly retention,
+and refund eligibility even after a late launch. Durable effect IDs and lookup
+reconciliation protect simulated refunds, mail and removal from duplicate effects.
+External adapters stay offline-only; missing external accounts remain RED.
+
+Bridge paid orders idempotently to sender suppression before any subsequent send.
+Customer enquiry HTTP is loopback-only (separate from the sales-page mailto), with
+strict size/schema/origin checks, persistent rate limits and a private mail outbox.
+Test these operational paths with fakes, crash/timeout replay and a bounded timed
+maintenance mix. Recheck mobile layout, mailto and Lighthouse; document actual
+limits, preserve session-1 evidence, and submit status=review at attempts=2,
+review_round=0 for Claude. No self-review, real email/payment or new infrastructure.

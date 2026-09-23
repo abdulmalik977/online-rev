@@ -1,15 +1,16 @@
 """Reproducible synthetic order demonstration. Everything stays in the chosen local root."""
 import argparse
 import csv
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
 from pathlib import Path
 from generator.build import build, FIELDS
 from .config import PLAN, AMOUNT
 from .flow import Orders, signature
+from .lifecycle import FakeAdapter
 
 
-def demo(root):
+def demo(root,complete=False):
     root=Path(root)
     if root.exists():
         raise ValueError('Choose a new demo directory')
@@ -34,6 +35,20 @@ def demo(root):
         result={'synthetic':True,'payments_taken':0,'messages_sent':0,'deployed':False,
                 'preview':str((root/'preview/previews'/slug/'index.html').resolve()),
                 'customer':str(customer/'index.html'),'order_status':store.get('fake-order-1')['status']}
+        if complete:
+            provider,host,mailer=FakeAdapter(),FakeAdapter(),FakeAdapter()
+            store.send_welcome('fake-order-1',at,mailer)
+            store.launch('fake-order-1',at,host)
+            store.apply_change('fake-order-1','fake-hours',{'hours':'Mon-Fri 8am-5pm'},at,verified=True)
+            customer=store.promote('fake-order-1')
+            store.launch('fake-order-1',at,host)
+            store.weekly_exports(at)
+            end=at+timedelta(days=30)
+            store.set_period_end('fake-order-1',end,verified=True)
+            store.cancel('fake-order-1',at+timedelta(days=1),provider,verified=True)
+            store.tick(end,provider=provider,host=host,mailer=mailer)
+            result.update(customer=str(customer/'index.html'),order_status=store.get('fake-order-1')['status'],
+                          simulated_receipts={'provider':len(provider.accepted),'host':len(host.accepted),'mail':len(mailer.accepted)})
         (root/'result.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
         return result
     finally:
@@ -42,4 +57,5 @@ def demo(root):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__); p.add_argument('--output',required=True)
-    print(json.dumps(demo(p.parse_args().output),indent=2))
+    p.add_argument('--lifecycle',action='store_true'); args=p.parse_args()
+    print(json.dumps(demo(args.output,args.lifecycle),indent=2))

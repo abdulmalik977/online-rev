@@ -27,6 +27,8 @@ def launch_checks(config,evidence,a8):
         ('TASK-007 hosted landing page and mobile performance',all(evidence.get(k) is True for k in ('landing_https','mobile_under_1s','lighthouse_90'))),
         ('TASK-007 form delivery and abuse controls',all(evidence.get(k) is True for k in ('form_delivery_verified','form_abuse_controls'))),
         ('TASK-007 welcome, cancellation, refund execution and weekly export',all(evidence.get(k) is True for k in ('welcome_delivery','cancellation_verified','refund_execution','weekly_export_30_days'))),
+        ('TASK-007 authoritative paid ledger wired into every sender transaction',evidence.get('paid_sender_guard') is True),
+        ('TASK-007 scheduled lifecycle and monthly analytics delivery',all(evidence.get(k) is True for k in ('lifecycle_scheduled','monthly_analytics_delivery'))),
         ('TASK-007 independent Claude PASS',evidence.get('task007_review_pass') is True),
     ]
 

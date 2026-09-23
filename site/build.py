@@ -2,6 +2,8 @@
 import argparse
 from html import escape
 import json
+import re
+from urllib.parse import quote
 from pathlib import Path
 from string import Template
 import sys
@@ -20,13 +22,17 @@ def build(config,output,evidence=None):
     company=escape(config.get('company') or '[Company name]')
     address=escape(config.get('postal_address') or '[Postal address]')
     support=config.get('support_email','')
+    if not isinstance(support,str) or not re.fullmatch(r'[A-Za-z0-9._+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}',support):
+        raise ValueError('A valid support_email is required for the concept mailto link')
+    concept_request=(f'<p class="concept-request"><a href="mailto:{quote(support,safe=chr(64))}">'
+                     f"Don't have a concept yet? Email {escape(support)} with your business name and city and we'll build one</a></p>")
     support_link=(f'<a href="mailto:{escape(support,quote=True)}">Email {escape(support)}</a>'
                   if text(support) and '@' in support and not support.endswith('.invalid')
                   else 'Contact details will be available when orders open.')
     checkout=(f'<a class="button" href="{escape(config["checkout_base_url"],quote=True)}" rel="noreferrer">Choose your preview and subscribe ↗</a>'
               if ready else '<button class="button" type="button" disabled>Orders are not open yet</button>')
     page=Template((HERE/'template.html').read_text(encoding='utf-8')).substitute(
-        company=company,postal_address=address,support_link=support_link,checkout=checkout,
+        company=company,postal_address=address,support_link=support_link,checkout=checkout,concept_request=concept_request,
         checkout_note=('Use the order link on your preview to keep your design linked to your subscription.' if ready
                        else 'You can explore the service here. Subscriptions will open once setup is complete.'),
         robots='' if ready else '<meta name="robots" content="noindex,nofollow">')

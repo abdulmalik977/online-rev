@@ -1,14 +1,14 @@
-# TASK-007 - sales page and order flow, session 1/2
+# TASK-007 - sales page and order flow, session 2/2 - ready for code review
 
-The portable sales page and signed fake order flow are implemented. A8 fixtures
+The portable sales page and local order lifecycle are implemented and submitted to Claude for code review, as requested by the owner. A8 fixtures
 21-23 are green and run inside `orders.launch_gate`. TASK-009 is PASS in REV-011;
 this work does not reopen its review or consume another TASK-009 attempt.
 
 ```powershell
 python site/build.py --output .runtime/sales-public
 python -m http.server 8777 --bind 127.0.0.1 --directory .runtime/sales-public
-python -m orders.demo --output .runtime/order-demo
-python -W error::ResourceWarning -m unittest orders.tests.test_flow -v
+python -m orders.demo --output .runtime/order-demo --lifecycle
+python -W error::ResourceWarning -m unittest discover -s orders/tests -t . -v
 python -W error::ResourceWarning -m unittest discover -s sender/tests -t . -v
 python -m orders.launch_gate
 ```
@@ -26,6 +26,12 @@ confirmation) launch/refund clock, cancellation/export terms, exclusions and FAQ
 Original CSS artwork, system fonts, no JS/fonts/images loaded externally. Privacy
 and email-preferences pages are included. Missing identity remains visibly a
 placeholder, not an invented company/address. Checkout is disabled by default.
+
+Direct visitors can now use the exact concept-request sentence below the order
+button as a mailto link. It reads `support_email` from the same configuration and
+remains visible when checkout is enabled. No sales-page form, service integration
+or automatic email was added. The example mailbox is reserved `.invalid`; the
+owner's real mailbox is still required before public launch.
 
 For real setup, merge the keys from `company/web-config.example.json` into the
 single ignored `company/config.json`, alongside sender configuration. Do not
@@ -61,18 +67,28 @@ between the durable intent and SMTP transaction. `sender.gate` now requires
 six A8 tests itself; supplied evidence cannot override a failure. All external
 launch conditions and real sending remain RED. Exit code is 2 until all pass.
 
-## Remaining session 2 work
+## Session 2 result and review boundary
 
-The task remains doing (1/2 sessions), not ready for PASS. Session 2 must complete
-and test the remaining local operational flow: applying confirmed corrections,
-customer launch acknowledgement, cancellation/export and refund execution adapter
-contracts, form HTTP validation/abuse controls and forwarding, and a timed bounded
-maintenance trial. The current refund function reports eligibility only and the
-form outbox does not deliver. Do not enable the public promises without these
-behaviors and external launch evidence.
+TASK-007 is review at attempts 2/2, review_round 0. No self-PASS. See
+`orders/REVIEW-HANDOFF.md` and `site/session-2-results.json` for review commands,
+receipts, tests, scope and remaining external acceptance gaps.
 
-Provider eligibility, real signed-webhook mapping, verified customer confirmation
-input, identity/domain/postal address, hosting/HTTPS, real SMTP, checkout, DNS and
-scheduled expiry/export remain external dependencies. Re-run mobile performance
-on the actual hosted URL, then request Claude's independent code review using the
-existing protocol. No Claude decision or task completion is claimed here.
+Orders: 31 tests; sender: 80; operations: 18; generator: 11; watchdog: 7, all pass.
+Twelve layout checks pass, including mailto visibility and absence of sales-page
+forms. Local simulated-mobile Lighthouse performance/accessibility/best-practices
+are 100 with LCP around 0.75 seconds; the actual hosted URL remains unmeasured.
+
+Local paths now cover authenticated corrections and bounded maintenance,
+versioned customer files, launch receipts, paid-to-sender crash recovery,
+period-end cancellation/export, idempotent simulated refunds, enquiry forwarding,
+weekly export retention and monthly reports with missing analytics as n/a.
+Customer enquiries use a separate loopback-only HTTP handler; concept requests
+remain mailto. The maintenance trial processes 7/10 bounded fixture requests,
+with three requiring human review; it does not prove 70% real-world labor savings.
+
+The owner requested code review now. Deployment and real-account requirements in
+the definition of done remain open: provider eligibility/native webhook, identity
+and real mailbox, public hosting/HTTPS/DNS, external SMTP/opt-out, receipt links,
+scheduler, delivery and hosted performance. The existing setup records remain
+unresolved. No live URL, real payment, email, refund or provider operation occurred.
+The combined gate remains RED/exit 2 and refuses non-offline effect adapters.

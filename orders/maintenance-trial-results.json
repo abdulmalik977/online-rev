@@ -1,0 +1,57 @@
+{
+  "cases": [
+    {
+      "case": "confirmed hours",
+      "outcome": "automated",
+      "local_seconds": 0.04088540002703667
+    },
+    {
+      "case": "corrected phone",
+      "outcome": "automated",
+      "local_seconds": 0.03910259995609522
+    },
+    {
+      "case": "confirmed intro",
+      "outcome": "automated",
+      "local_seconds": 0.03945679997559637
+    },
+    {
+      "case": "confirmed service add",
+      "outcome": "automated",
+      "local_seconds": 0.035143300076015294
+    },
+    {
+      "case": "confirmed service removal",
+      "outcome": "automated",
+      "local_seconds": 0.036716300062835217
+    },
+    {
+      "case": "customer price text",
+      "outcome": "automated",
+      "local_seconds": 0.034033300005830824
+    },
+    {
+      "case": "customer headline",
+      "outcome": "automated",
+      "local_seconds": 0.03459990001283586
+    },
+    {
+      "case": "unstructured correction",
+      "outcome": "manual_review",
+      "local_seconds": 3.360002301633358e-05
+    },
+    {
+      "case": "unsupported photo format",
+      "outcome": "manual_review",
+      "local_seconds": 0.00034060003235936165
+    },
+    {
+      "case": "missing media permission",
+      "outcome": "manual_review",
+      "local_seconds": 3.809994086623192e-05
+    }
+  ],
+  "automated": 7,
+  "total": 10,
+  "scope": "Structured, authenticated fixture inputs. Excludes collecting instructions, fact/rights verification, human edits, network deployment and real support labor. 7/10 here is not proof of 70% overall maintenance automation."
+}

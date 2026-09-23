@@ -22,6 +22,7 @@ class Engine:
         if len(secret)<32:
             raise ValueError('At least 32 secret bytes required for opt-out tokens')
         self.store,self.config,self.secret=store,config,secret
+        self.order_guard=None
         self.holidays=config.get('us_federal_holidays',[])
         self.shared=set(config.get('shared_mail_domains',sorted(SHARED)))
         with store.transaction() as conn:
@@ -203,6 +204,9 @@ class Engine:
             except (ValueError,TypeError,KeyError,AttributeError):
                 return 'invalid_config'
             p=self.store.get(prospect_id)
+            if self.order_guard is not None:
+                self.order_guard(p,at)
+                p=self.store.get(prospect_id)
             job=service_job or str(number)
             row=conn.execute('SELECT * FROM sends WHERE prospect_id=? AND email_no=?',(prospect_id,job)).fetchone()
             if row and row['status'] in {'sending','sent','unknown'}:
@@ -214,6 +218,9 @@ class Engine:
             if service_job:
                 if not row or row['kind']!='service':
                     raise ValueError('Unknown service job')
+                if row['template'] in {'ORDER','NO_CALL_ORDER'} and conn.execute('SELECT 1 FROM orders WHERE prospect_id=?',(prospect_id,)).fetchone():
+                    conn.execute("UPDATE sends SET status='failed',updated=? WHERE id=?",(stamp(at),row['id']))
+                    return 'paid_service_cancelled'
                 if instant(at)<instant(row['not_before']):
                     return 'reply_not_due'
             else:
@@ -263,6 +270,12 @@ class Engine:
                 conn.execute("UPDATE sends SET status='failed',updated=? WHERE id=?",(stamp(at),send_id))
                 return 'invalid_config'
             p=self.store.get(prospect_id)
+            if self.order_guard is not None:
+                self.order_guard(p,at)
+                p=self.store.get(prospect_id)
+            if service_job and row['template'] in {'ORDER','NO_CALL_ORDER'} and conn.execute('SELECT 1 FROM orders WHERE prospect_id=?',(prospect_id,)).fetchone():
+                conn.execute("UPDATE sends SET status='failed',updated=? WHERE id=?",(stamp(at),send_id))
+                return 'paid_service_cancelled'
             if not service_job and (p['state'] not in {'queued','active'} or self.store.suppressed(p['email']) or conn.execute('SELECT 1 FROM orders WHERE prospect_id=?',(prospect_id,)).fetchone()):
                 conn.execute("UPDATE sends SET status='failed',updated=? WHERE id=?",(stamp(at),send_id))
                 return 'cancelled_before_send'
