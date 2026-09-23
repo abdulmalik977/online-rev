@@ -1,42 +1,38 @@
 # TASK-009: local sender and inbox implementation
 
-DEC-008 implementation, session **1/3**. Standard-library Python 3.11+, private
-SQLite, fake SMTP/IMAP, and loopback HTTP tests. No credentials, provider connection,
-outreach, or deployment. **The complete test suite is red**: three executable
-specification conflicts remain visible, with proposed amendments in their test
-docstrings. TASK-008 remains closed; this does not open another prose review.
+DEC-008 implementation, session **2/3**, with owner-approved A7. Standard-library
+Python 3.11+, private SQLite, fake SMTP/IMAP, and loopback HTTP tests. **All 74 tests
+pass**, including the three unchanged reference assertions that failed in session 1.
+TASK-009 is ready for Claude's independent code review; no PASS is claimed yet.
 
 From the repository root:
 
 ```powershell
-# Complete suite: currently returns nonzero for three explicit spec conflicts.
-python -W error::ResourceWarning -m unittest discover -s sender/tests -v
-
-# The twenty numbered cases, seven extra cases, and operational/integration tests.
-python -m unittest sender.tests.test_acceptance sender.tests.test_operations sender.tests.test_integration -v
-
-# Execute just the unresolved rules and read each test's proposed amendment.
+python -W error::ResourceWarning -m unittest discover -s sender/tests -t . -v
 python -m unittest sender.tests.test_spec_conflicts -v
-
+python -W error::ResourceWarning -m unittest discover -s scripts -p 'test_*.py' -q
+python scripts/watchdog.py --test
 # Prints every section-8 gate; exits 2 (RED), including disabled real sending.
 python -m sender gate
 ```
 
-Results are recorded in [session-1-results.json](session-1-results.json). There are
-no skipped or `expectedFailure` tests hiding the remaining failures:
+[Session 2 results](session-2-results.json) record 74/74 sender tests, 18/18
+operations tests and 7/7 watchdog rules, with no skips or expected failures.
+[Session 1 results](session-1-results.json) preserve the original three failures.
+A7 resolves them as follows:
 
-- A4 retries after IMAP absence even when SMTP accepted the first message without
-  a Sent copy. The fake proves duplicate acceptance. The test proposes retaining
-  unknown status until definitive reconciliation.
-- A6 gives non-paying prospects no payment/confirmation timestamp for the owner
-  response deadline. The test proposes receipt time for owner responses only.
-- A6's first-512-byte fallback ID can collide for distinct messages and drop an
-  opt-out. The test proposes hashing the full canonical message/provider identity.
+- Absent/unavailable Sent lookup leaves unknown delivery held, even after 24 hours.
+  IMAP proof or explicit owner reconciliation closes the unknown-send queue item;
+  only a definite failure or owner failed decision permits the single retry.
+- Every owner queue deadline starts at receipt, including non-customers. One
+  Chicago business day preserves receipt wall time, skipping weekends and configured
+  holidays; payment/confirmation remain unrelated to owner response deadlines.
+- Missing Message-ID uses the receiver identity, optional provider UID and full
+  canonical message bytes, including MIME content. No body-prefix fallback remains.
 
-See [test descriptions](tests/test_spec_conflicts.py) for exact reproductions and
-the smallest proposed changes. Runtime follows these disputed amendments literally
-for demonstration; **do not use it to send real mail**. The engine enforces offline
-transports, and the CLI has no send/IMAP-connect command.
+See [reference regressions](tests/test_spec_conflicts.py), [16 additional A7
+checks](tests/test_a7.py), and [code review handoff](REVIEW-HANDOFF.md). The engine
+continues to require offline transports; the CLI has no send/IMAP-connect command.
 
 ## Components and data boundary
 
@@ -73,11 +69,22 @@ fully fake fixture in `tests/support.py` uses reserved `.invalid` addresses and
 must not be copied as real company identity. Configuration and tokens are not
 printed or committed. No real business prospect list was imported.
 
-API adapters supply raw inbound bytes to `Engine.receive`, confirmed orders to
+API adapters supply raw inbound bytes to
+`Engine.receive(raw, received_at, mailbox_id="hello", provider_uid="INBOX:uidvalidity:uid")`,
+confirmed orders to
 `Store.paid`, and classified analytics events to `record_view`. A provider webhook
 must already be authenticated before calling `paid`; implementing that checkout
 integration belongs to TASK-007. An HMAC secret must persist privately so opt-out
 links remain valid; no scheduled secret rotation or external persistence is claimed.
+
+For messages without Message-ID, `mailbox_id` is required and must identify a
+configured receiving account (local name or full address); do not infer it from
+untrusted To headers. Supply a stable provider UID when available, namespaced by
+folder and UIDVALIDITY for IMAP, consistently across repeated fetches. The fallback
+is SHA-256 over compact JSON `[normalized_receiver, uid_or_null]`, NUL, and the
+complete original message with CRLF/CR normalized to LF. Other bytes are preserved.
+Existing Message-ID behavior is unchanged. No real inbox has been ingested; this
+is not a migration of previously consumed production fallback IDs.
 
 `Store.project_queue(private_root, at)` writes `sales/queue/` and the existing
 `approvals/pending.md` format under a caller-selected private root, using the
@@ -87,6 +94,15 @@ exercise this API, and it cannot bypass the offline transport guard. The default
 operator projection should be under `.runtime/sender/`; no customer messages are
 written to the public working tree during this task. `sales/queue`, suppression
 CSV and company config are Git-ignored as an additional guard.
+
+Unknown-send items use `Q-{prospect_id}-unknown-send`. Resolve through
+`Engine.resolve_unknown_send(queue_id, at, "sent" or "failed", approved=True,
+note="owner decision and evidence")`; the decision is audited and does not send.
+A failed outcome permits the ordinary retry path only while its eligibility and
+one-retry limit allow it. A second unknown outcome reopens the same queue ID with
+its new receipt deadline. Queue projection reflects closure/reopening and includes
+the deadline. Existing unresolved queue rows are redated from their original
+receipt when the engine opens; reconciliation polling does not extend deadlines.
 
 To export from an existing local database:
 
@@ -99,13 +115,13 @@ No sample production database is created automatically. These commands do not
 invent leads, views or sales. The snapshot is JSON so `n/a` survives the existing
 numeric SQLite reporting schema without a migration.
 
-## Remaining session work
+## Review handoff and remaining session
 
-Resolve the three failing test proposals through the DEC-008 implementation
-workflow; do not silently change section 12. Then independently rerun the complete
-suite and prepare the code handoff for Claude. At most two sessions remain. No
-TASK-009 review or PASS is recorded yet. Live setup stays red independently of
-local test success; TASK-005 and TASK-006 are not resumed by this work.
+Claude must independently run the suite and record its code decision through
+`--review TASK-009`. The task is `review`, attempts 2, review_round 0. One session
+remains for required review fixes. TASK-008 is closed; this opens no prose review.
+Live setup remains red pending external evidence and code PASS. TASK-005 and
+TASK-006 are not resumed by this work.
 
 Timezone data comes from CPython's first-party `tzdata` 2026.4 wheel: only the
 1,754-byte Chicago TZif and its licenses are vendored, not a Python dependency.

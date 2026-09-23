@@ -19,8 +19,13 @@ class SMTPAdapter:
             refused=self.client.send_message(Parser(policy=policy.default).parsestr(body))
             if refused:
                 raise DefiniteFailure('Recipient refused')
-        except (smtplib.SMTPRecipientsRefused,smtplib.SMTPSenderRefused,smtplib.SMTPDataError) as error:
-            raise DefiniteFailure('Explicit SMTP rejection') from error
+        except (smtplib.SMTPRecipientsRefused,smtplib.SMTPSenderRefused,smtplib.SMTPDataError,smtplib.SMTPHeloError) as error:
+            code=getattr(error,'smtp_code',None)
+            if isinstance(error,smtplib.SMTPRecipientsRefused) or (isinstance(code,int) and 400<=code<600):
+                raise DefiniteFailure('Explicit SMTP rejection') from error
+            raise
+        except ConnectionRefusedError as error:
+            raise DefiniteFailure('Connection refused before DATA') from error
 
 
 class IMAPAdapter:

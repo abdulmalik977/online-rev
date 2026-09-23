@@ -64,8 +64,15 @@ def service_due(at, holidays=(), cap_reached=False):
 
 
 def next_business_day(at, holidays=()):
-    local = instant(at).astimezone(CENTRAL) + timedelta(days=1)
-    return next_slot(local, holidays, service=True)
+    # Receipt + one Chicago business day, preserving receipt wall-clock time.
+    # Reply-send windows are a separate concern handled by service_due.
+    local = instant(at).astimezone(CENTRAL)
+    holidays=set(holidays)
+    for offset in range(1,371):
+        target=local+timedelta(days=offset)
+        if target.weekday()<5 and target.date().isoformat() not in holidays:
+            return target.astimezone(UTC)
+    raise ValueError('No business day within one year')
 
 
 def cap(first_send, at):

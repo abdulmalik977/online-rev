@@ -27,6 +27,10 @@ class Engine:
         with store.transaction() as conn:
             for mailbox in config['mailboxes']:
                 conn.execute('INSERT OR IGNORE INTO mailboxes(id) VALUES(?)',(mailbox,))
+            # Upgrade pending A6 queue clocks using their original receipt time.
+            for row in conn.execute('SELECT id,created FROM queue WHERE resolved=0').fetchall():
+                conn.execute('UPDATE queue SET due=? WHERE id=?',
+                             (store.owner_due(row['created'],self.holidays),row['id']))
 
     def token(self, ident):
         return hmac.new(self.secret,ident.encode(),sha256).hexdigest()
@@ -93,8 +97,14 @@ class Engine:
         with self.store.transaction():
             self.complaint(event_id,self.store.get(prospect_id),at)
 
-    def receive(self,raw,at):
-        event=parse(raw)
+    def receive(self,raw,at,*,mailbox_id=None,provider_uid=None):
+        receiver=None
+        if mailbox_id is not None:
+            receiver=normalize(mailbox_id if '@' in mailbox_id else mailbox_id+'@'+self.config['sending_domain'])
+            configured={m+'@'+self.config['sending_domain'] for m in self.config['mailboxes']}
+            if receiver not in configured:
+                raise ValueError('Receiving mailbox is not configured')
+        event=parse(raw,mailbox_id=receiver,provider_uid=provider_uid)
         with self.store.transaction() as conn:
             if conn.execute('SELECT 1 FROM inbound WHERE id=?',(event['id'],)).fetchone():
                 return {'kind':'duplicate'}
@@ -136,7 +146,7 @@ class Engine:
                     self.store.enqueue(None,event['id'],kind,at,'Identify sender; no automated response.',self.holidays)
                 return {'kind':kind}
             signature=fill(SIGNATURE,variables(self.config,p,self.token(p['id'])))
-            event=parse(raw,signature)
+            event=parse(raw,signature,mailbox_id=receiver,provider_uid=provider_uid)
             count=conn.execute("SELECT COUNT(*) FROM sends WHERE prospect_id=? AND kind='service' AND template NOT IN ('ACK_UNSUB','ACK_REFUND','OWNER') AND status!='failed'",(p['id'],)).fetchone()[0]
             decision=decide(event,p['state'],count)
             p['state']=decision.state
@@ -254,28 +264,64 @@ class Engine:
             except Exception:
                 status='unknown'
             conn.execute('UPDATE sends SET status=?,updated=?,accepted_at=? WHERE id=?',(status,stamp(at),stamp(at) if status=='sent' else None,send_id))
+            if status=='unknown':
+                self._unknown_queue(conn.execute('SELECT * FROM sends WHERE id=?',(send_id,)).fetchone(),at)
             if status=='sent' and number==1 and not service_job:
                 p['first_send_at']=stamp(at); self.store.save(p)
             return status
+
+    def _unknown_queue(self,row,at):
+        draft=('Delivery outcome unknown. Do not resend automatically. Reconcile '+row['message_id']+
+               ' as sent or failed using explicit owner approval and an evidence note. Send row: '+str(row['id']))
+        self.store.enqueue(row['prospect_id'],row['message_id'],'unknown_send',at,draft,self.holidays)
+        # A permitted retry can itself become unknown with the same Message-ID.
+        # Reopen its stable queue item, while prior owner decisions remain audited.
+        self.store.conn.execute("UPDATE queue SET resolved=0,created=?,due=?,draft=? WHERE source=? AND class='unknown_send' AND resolved=1",
+                                (stamp(at),self.store.owner_due(at,self.holidays),draft,row['message_id']))
+
+    def _settle_unknown(self,row,status,at):
+        conn=self.store.conn
+        conn.execute('UPDATE sends SET status=?,updated=?,accepted_at=? WHERE id=?',
+                     (status,stamp(at),row['created'] if status=='sent' else None,row['id']))
+        conn.execute("UPDATE queue SET resolved=1 WHERE source=? AND class='unknown_send'",(row['message_id'],))
+        if status=='sent' and row['email_no']=='1':
+            p=self.store.get(row['prospect_id']); p.setdefault('first_send_at',row['created']); self.store.save(p)
 
     def reconcile(self,at,imap):
         if not getattr(imap,'offline',False):
             raise PermissionError('Only fake IMAP permitted in this task')
         outcomes=[]
         with self.store.transaction() as conn:
-            # Recover intents from a dead process once the transport timeout has elapsed.
             conn.execute("UPDATE sends SET status='unknown' WHERE status='sending' AND updated<=?",(stamp(instant(at)-timedelta(minutes=5)),))
             for row in conn.execute("SELECT * FROM sends WHERE status='unknown'").fetchall():
+                self._unknown_queue(row,at)
                 try:
                     found=imap.contains(row['mailbox'],row['message_id'])
                 except Exception:
-                    continue  # Unavailable IMAP is not evidence of absence.
-                status='sent' if found else 'failed' if instant(at)>=instant(row['created'])+timedelta(hours=24) else 'unknown'
-                conn.execute('UPDATE sends SET status=?,updated=?,accepted_at=? WHERE id=?',(status,stamp(at),row['created'] if found else None,row['id']))
-                if found and row['email_no']=='1':
-                    p=self.store.get(row['prospect_id']); p.setdefault('first_send_at',row['created']); self.store.save(p)
-                outcomes.append((row['message_id'],status))
+                    found=False  # Missing/unavailable Sent never proves non-acceptance.
+                if found:
+                    self._settle_unknown(row,'sent',at)
+                outcomes.append((row['message_id'],'sent' if found else 'unknown'))
         return outcomes
+
+    def resolve_unknown_send(self,queue_id,at,outcome,*,approved=False,note=''):
+        if not approved:
+            raise PermissionError('Explicit owner reconciliation required')
+        if outcome not in {'sent','failed'} or not isinstance(note,str) or not note.strip():
+            raise ValueError('A sent/failed decision and evidence note are required')
+        with self.store.transaction() as conn:
+            queues=conn.execute("SELECT * FROM queue WHERE class='unknown_send' AND resolved=0").fetchall()
+            row=next((q for q in queues if self.store.queue_ident(q)==queue_id),None)
+            if row is None:
+                raise ValueError('No pending unknown-send queue item')
+            send=conn.execute("SELECT * FROM sends WHERE message_id=? AND prospect_id=? AND status='unknown'",
+                              (row['source'],row['prospect_id'])).fetchone()
+            if send is None:
+                raise ValueError('Queue item does not identify an unknown send')
+            self._settle_unknown(send,outcome,at)
+            conn.execute('INSERT INTO audit(at,action,detail) VALUES(?,?,?)',
+                         (stamp(at),'owner_unknown_send',json.dumps({'queue':queue_id,'send_id':send['id'],
+                                                                  'outcome':outcome,'note':note.strip()})))
 
     def evaluate_bounces(self,at):
         with self.store.transaction() as conn:
@@ -301,7 +347,7 @@ class Engine:
             raise PermissionError('Explicit owner resolution required')
         with self.store.transaction() as conn:
             row=conn.execute('SELECT * FROM queue WHERE id=?',(queue_id,)).fetchone()
-            if not row or row['resolved'] or not row['prospect_id']:
+            if not row or row['resolved'] or not row['prospect_id'] or row['class']=='unknown_send':
                 raise ValueError('Unresolved known-prospect queue item required')
             p=self.store.get(row['prospect_id']); p['mailbox']=self.mailbox(p)
             message=render(self.config,p,self.token(p['id']),'<'+uuid.uuid4().hex+'@'+self.config['sending_domain']+'>',owner_text=text)

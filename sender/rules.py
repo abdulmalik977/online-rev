@@ -96,7 +96,7 @@ class Text(HTMLParser):
         self.parts.append(data)
 
 
-def parse(raw, signature=''):
+def parse(raw, signature='', *, mailbox_id=None, provider_uid=None):
     message = BytesParser(policy=policy.default).parsebytes(raw)
     part = message.get_body(preferencelist=('plain','html')) if message.is_multipart() else message
     text = part.get_content() if part and part.get_content_maintype() == 'text' else ''
@@ -117,8 +117,14 @@ def parse(raw, signature=''):
     body = ' '.join(body.lower().split())
     ident = str(message.get('Message-ID','')).strip()
     if not ident:
-        encoded = json.dumps([str(message.get('From','')),str(message.get('Date',''))], ensure_ascii=False).encode() + b'\0' + text.encode()[:512]
-        ident = 'sha256:' + sha256(encoded).hexdigest()
+        if not isinstance(mailbox_id,str) or not mailbox_id.strip():
+            raise ValueError('Receiving mailbox identity is required without Message-ID')
+        # A7: preserve every header, MIME part and body byte except line endings.
+        # JSON frames the receiver/UID fields; UID should include UIDVALIDITY.
+        metadata=json.dumps([mailbox_id, str(provider_uid) if provider_uid is not None else None],
+                            ensure_ascii=True,separators=(',',':')).encode('ascii')
+        canonical=raw.replace(b'\r\n',b'\n').replace(b'\r',b'\n')
+        ident = 'sha256:' + sha256(metadata+b'\0'+canonical).hexdigest()
     recipients, original_ids = [], []
     is_dsn = message.get_content_type() == 'multipart/report' and message.get_param('report-type') == 'delivery-status'
     if is_dsn:

@@ -31,7 +31,7 @@ def snapshot(store,at,analytics_configured=False):
                 cohort=dict(unique_prospects_contacted=contacted,replied_prospects=len(first),positive_prospects=len(positive),paid_prospects=len(paid)),
                 rates={key:(value/contacted if contacted else None) for key,value in [('reply',len(first)),('positive',len(positive)),('paid',len(paid))]},
                 pilot_started_at=min((r['accepted_at'] for r in sends),default=None),
-                critical=[f"Owner queue overdue: Q-{r['prospect_id'] or 'unknown'}-{r['id']}" for r in conn.execute('SELECT * FROM queue WHERE resolved=0') if r['due'] and r['due']<stamp(at)])
+                critical=["Owner queue overdue: "+store.queue_ident(r) for r in conn.execute('SELECT * FROM queue WHERE resolved=0') if r['due'] and r['due']<stamp(at)])
 
 
 def export(store,at,path,analytics_configured=False):

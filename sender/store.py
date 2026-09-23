@@ -106,18 +106,18 @@ class Store:
 
     def enqueue(self, prospect, source, kind, at, draft, holidays=()):
         self.conn.execute('INSERT OR IGNORE INTO queue(prospect_id,source,class,created,due,draft) VALUES(?,?,?,?,?,?)',
-                          (prospect,source,kind,stamp(at),self.owner_due(prospect,holidays),draft))
+                          (prospect,source,kind,stamp(at),self.owner_due(at,holidays),draft))
 
-    def owner_due(self, prospect, holidays=()):
-        # Literal A6 clock: non-buyers have no payment/confirmation start.
-        # Executable conflict/proposal is in test_spec_conflicts.py.
-        if not prospect:
-            return None
-        p=self.get(prospect)
-        if not p.get('payment_at') or not p.get('confirmation_at'):
-            return None
-        start=max(instant(p['payment_at']),instant(p['confirmation_at']))
-        return stamp(next_business_day(start,holidays))
+    @staticmethod
+    def owner_due(received_at, holidays=()):
+        # A7: all owner queues start at receipt, never at payment/confirmation.
+        return stamp(next_business_day(received_at,holidays))
+
+    @staticmethod
+    def queue_ident(row):
+        if row['class']=='unknown_send':
+            return f"Q-{row['prospect_id']}-unknown-send"
+        return f"Q-{row['prospect_id'] or 'unknown'}-{row['id']}"
 
     def paid(self, order_id, prospect_id, at):
         with self.transaction() as conn:
@@ -150,16 +150,23 @@ class Store:
         pending=root/'approvals/pending.md'
         previous=pending.read_text(encoding='utf-8') if pending.exists() else '# Pending owner inputs\n'
         critical=[]
-        for row in self.conn.execute('SELECT * FROM queue WHERE resolved=0 ORDER BY id'):
+        for row in self.conn.execute('SELECT * FROM queue ORDER BY id'):
             # IDs are database-generated; untrusted email cannot become a path.
-            ident=f"Q-{row['prospect_id'] or 'unknown'}-{row['id']}"
+            ident=self.queue_ident(row)
             safe_source=' '.join(row['source'].split())[:200]
             draft=root/'sales/queue'/f'{ident}.md'
-            content=f"# {ident}\n\nClass: {row['class']}\nThread: {safe_source}\n\nDraft (not sent):\n{row['draft']}\n"
+            content=f"# {ident}\n\nClass: {row['class']}\nDue: {row['due']}\nThread: {safe_source}\n\nDraft (not sent):\n{row['draft']}\n"
             temp=draft.with_suffix('.tmp'); temp.write_text(content,encoding='utf-8'); temp.replace(draft)
-            if f'- [ ] {ident} |' not in previous and f'- [x] {ident} |' not in previous:
-                previous+=f"- [ ] {ident} | {row['created']} | {row['class']}; thread {safe_source}; draft in sales/queue/{ident}.md\n"
-            if row['due'] and instant(at)>instant(row['due']):
+            marker='x' if row['resolved'] else ' '
+            line=f"- [{marker}] {ident} | {row['created']} | {row['class']}; thread {safe_source}; draft in sales/queue/{ident}.md"
+            lines=previous.splitlines()
+            owned=[i for i,text in enumerate(lines) if text.startswith((f'- [ ] {ident} |',f'- [x] {ident} |'))]
+            if owned:
+                lines[owned[0]]=line
+            else:
+                lines.append(line)
+            previous='\n'.join(lines)+'\n'
+            if not row['resolved'] and row['due'] and instant(at)>instant(row['due']):
                 critical.append(ident)
         temp=pending.with_suffix('.tmp'); temp.write_text(previous,encoding='utf-8'); temp.replace(pending)
         return critical

@@ -41,7 +41,7 @@ class ExtraCases(Fixture):
 
     def test_extra_06_missing_message_id_once(self):
         raw=mail('unsubscribe',missing_id=True)
-        self.engine.receive(raw,AT); self.assertEqual(self.engine.receive(raw,AT)['kind'],'duplicate')
+        self.engine.receive(raw,AT,mailbox_id='hello'); self.assertEqual(self.engine.receive(raw,AT,mailbox_id='hello')['kind'],'duplicate')
         self.assertEqual(len(self.sends()),1)
 
     def test_extra_07_timeout_imap_found(self):

@@ -1,0 +1,43 @@
+{
+  "session": 2,
+  "session_limit": 3,
+  "at": "2026-09-23T13:48:37+00:00",
+  "amendment_commit": "89f4a64",
+  "implementation_status": "review; awaiting independent Claude code review",
+  "total_sender_tests": 74,
+  "passing_sender_tests": 74,
+  "failing_sender_tests": 0,
+  "errors": 0,
+  "skipped": 0,
+  "expected_failures": 0,
+  "acceptance_20_passed": 20,
+  "extra_7_passed": 7,
+  "reference_regressions_passed": 3,
+  "additional_a7_tests_passed": 16,
+  "regression_tests_passed": 18,
+  "watchdog_rule_tests_passed": 7,
+  "commands": [
+    "python -W error::ResourceWarning -m unittest discover -s sender/tests -t . -v",
+    "python -W error::ResourceWarning -m unittest discover -s scripts -p 'test_*.py' -q",
+    "python scripts/watchdog.py --test",
+    "python -m sender gate"
+  ],
+  "live_sending_enabled": false,
+  "real_messages_sent": 0,
+  "gate_exit_code": 2,
+  "gate": "RED; external evidence absent and live transport disabled",
+  "gate_output": [
+    "RED 1 SETUP-EMAIL and mailbox authentication",
+    "RED 2 Complete Houston company configuration",
+    "RED 3 Commercial host, ten live previews, rehearsed and scheduled expiry",
+    "RED 4 Self-serve checkout 200 and enabled order button",
+    "RED 5 Suppression, role filter, 20+7 cases and FAQ",
+    "RED 6 External opt-out and signed one-click POST",
+    "RED 7 Legal escalation with zero outgoing mail",
+    "RED 8 Pilot clock excludes tests and warm-up",
+    "RED TASK-009 real sending disabled"
+  ],
+  "spec_failures": [],
+  "review_round": 0,
+  "historical_result": "session-1-results.json preserves original failing run"
+}
