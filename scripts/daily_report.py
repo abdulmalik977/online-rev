@@ -1,5 +1,6 @@
 """Nine ordered sections, at most 30 lines; optional owner-only SMTP delivery."""
 import argparse
+import json
 from datetime import timedelta
 from email.message import EmailMessage
 import os
@@ -20,8 +21,29 @@ def short(items):
     return " ".join(text.split())[:900]
 
 
+def sender_pipeline(root, at):
+    path = root / '.runtime/sender/pipeline.json'
+    if not path.exists():
+        return None
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from sender.calendar import local_day as central_day
+    data = json.loads(path.read_text(encoding='utf-8'))
+    expected = str(central_day(at) - timedelta(days=1))
+    if data.get('schema_version') != 1 or data.get('timezone') != 'America/Chicago' or data.get('report_day') != expected:
+        raise ValueError('Sender pipeline snapshot is stale or invalid')
+    for key in ('emails_sent', 'replies', 'paid'):
+        if type(data.get(key)) is not int or data[key] < 0:
+            raise ValueError('Invalid sender pipeline counter')
+    views = data.get('sample_views')
+    if views is not None and (type(views) is not int or views < 0):
+        raise ValueError('Invalid sender views counter')
+    return data
+
+
 def generate(root=ROOT, at=None):
     at = at or now()
+    sender = sender_pipeline(root, at)
     findings = scan(root, at)
     day = local_day(at)
     yesterday = local_day(at - timedelta(days=1))
@@ -57,6 +79,11 @@ def generate(root=ROOT, at=None):
                   short(previous) if previous else "No recorded runs yesterday",
                   short(issues), short(today), short([f"{a['id']}: {a['description']}" for a in pending]),
                   short(health), short(findings["loops"]), short(critical)]
+        if sender is not None:
+            values[1] = f"Central closed {sender['report_day']}: " + " / ".join(
+                f"{label}: {'n/a' if sender[key] is None else sender[key]}" for label, key in (
+                    ('emails sent', 'emails_sent'), ('replies', 'replies'), ('sample views', 'sample_views'), ('paid', 'paid')))
+            values[8] = short(critical + sender.get('critical', []))
         lines = [f"# Daily report — {day} (Asia/Riyadh)"]
         for title, value in zip(SECTIONS, values):
             lines.extend([f"## {title}", value])

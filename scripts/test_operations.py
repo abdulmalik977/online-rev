@@ -22,6 +22,16 @@ class OperationTests(unittest.TestCase):
         self.root = Path(temp.name)
         for directory in ("company", "agents", "approvals", "tasks", "reviews"):
             shutil.copytree(ROOT / directory, self.root / directory)
+        # The original operations fixtures expect REV-001/002 and an open
+        # TASK-004. Isolate them from later real company decisions/reviews.
+        for review in (self.root / 'reviews').glob('REV-*.md'):
+            assert review.resolve().is_relative_to(self.root.resolve())
+            if review.stem not in {'REV-001', 'REV-002'}:
+                review.unlink()
+        fixture_path = self.root / 'tasks/TASK-004.md'
+        fixture_task, fixture_body = read_front(fixture_path)
+        fixture_task['status'] = 'doing'
+        write_front(fixture_path, fixture_task, fixture_body)
         self.env = patch.dict(os.environ, {}, clear=True)
         self.env.start()
         self.addCleanup(self.env.stop)

@@ -1,0 +1,12 @@
+{
+  "project": "CPython tzdata / IANA timezone database",
+  "version": "2026.4",
+  "wheel_url": "https://files.pythonhosted.org/packages/f9/bc/8737e8d54cf51106118039b83f485a4783112fab49ea9d044b234978a46e/tzdata-2026.4-py2.py3-none-any.whl",
+  "wheel_sha256": "c2169a8b0a7a5e9674da5a135ccdfb2b3e671b333ed9fed17b41f73c34476e81",
+  "zone": "America/Chicago",
+  "zone_sha256": "c27b739ff46a7df0594e120d725b439217e11e44ea9a50cdc49130383b5482e7",
+  "licenses": [
+    "tzdata-2026.4.dist-info/licenses/LICENSE",
+    "tzdata-2026.4.dist-info/licenses/licenses/LICENSE_APACHE"
+  ]
+}

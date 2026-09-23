@@ -8,3 +8,8 @@ db/*.sqlite-shm
 db/company.sqlite
 logs/watchdog.json
 agents/*-LOW-COMPUTE.md
+
+# Sender runtime and owner configuration; never commit recipient data.
+/company/config.json
+/sales/suppression.csv
+/sales/queue/

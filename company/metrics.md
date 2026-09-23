@@ -11,3 +11,9 @@ One credit is one CLI-reported turn; tokens are logged for calibration.
 Claude/Codex turn granularity differs; rolling provider windows remain a residual risk.
 Failed and interrupted launches retain their reservation conservatively.
 Report days and quota resets use Asia/Riyadh (fixed UTC+03:00); timestamps use UTC.
+
+TASK-009 integration: when .runtime/sender/pipeline.json exists, the Pipeline line uses
+the fully closed America/Chicago day explicitly labelled in that snapshot, per DEC-008.
+Missing analytics displays n/a, not zero. Revenue/quota/report naming retain Riyadh days.
+The exporter keeps message counts, unique-prospect rates and distinct paid orders separate;
+no sender snapshot is produced from fake tests into production reporting.

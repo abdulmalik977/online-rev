@@ -1,0 +1,36 @@
+{
+  "session": 1,
+  "session_limit": 3,
+  "at": "2026-09-23T09:10:45+00:00",
+  "implementation_status": "doing; specification conflict tests remain red",
+  "total_sender_tests": 58,
+  "passing_sender_tests": 55,
+  "failing_sender_tests": 3,
+  "errors": 0,
+  "skipped": 0,
+  "expected_failures": 0,
+  "acceptance_20_passed": 20,
+  "extra_7_passed": 7,
+  "regression_tests_passed": 18,
+  "watchdog_rule_tests_passed": 7,
+  "live_sending_enabled": false,
+  "real_messages_sent": 0,
+  "gate": "RED; external evidence absent and live transport disabled",
+  "spec_failures": [
+    {
+      "id": "sender.tests.test_spec_conflicts.SpecConflicts.test_a4_absent_sent_copy_cannot_prove_non_delivery",
+      "description": "A4 fails duplicate prevention after accepted SMTP without a Sent copy.\n\nProposal: after 24h IMAP absence, keep unknown and require provider proof\nor owner reconciliation; only definite non-acceptance permits the retry.\nSMTP acceptance does not itself create a searchable IMAP Sent copy.\n",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\A-bdu\\Desktop\\online rev\\sender\\tests\\test_spec_conflicts.py\", line 29, in test_a4_absent_sent_copy_cannot_prove_non_delivery\n    self.assertEqual(len(smtp.accepted),1,'A4 permits duplicate accepted email 2 after an absent Sent copy')\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 2 != 1 : A4 permits duplicate accepted email 2 after an absent Sent copy\n"
+    },
+    {
+      "id": "sender.tests.test_spec_conflicts.SpecConflicts.test_a6_owner_deadline_exists_for_non_customer",
+      "description": "A6 payment/confirmation clock cannot date a non-buyer's legal queue.\n\nProposal: owner-response clock starts at inbound receipt; only launch and\nautomatic-refund eligibility use later(payment, confirmation) in offer 4.\n",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\A-bdu\\Desktop\\online rev\\sender\\tests\\test_spec_conflicts.py\", line 39, in test_a6_owner_deadline_exists_for_non_customer\n    self.assertIsNotNone(row['due'],'Non-paying legal request has no A6 owner-response start')\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: unexpectedly None : Non-paying legal request has no A6 owner-response start\n"
+    },
+    {
+      "id": "sender.tests.test_spec_conflicts.SpecConflicts.test_a6_short_body_digest_drops_a_distinct_optout",
+      "description": "A6 first-512-byte fallback dedup loses a distinct later opt-out.\n\nProposal: hash the full canonical message (or stable provider UID plus\nmailbox identity), not a body prefix, when Message-ID is absent.\n",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\A-bdu\\Desktop\\online rev\\sender\\tests\\test_spec_conflicts.py\", line 50, in test_a6_short_body_digest_drops_a_distinct_optout\n    self.assertTrue(self.store.suppressed('owner@plumber.invalid'),'Distinct opt-out was discarded as duplicate by A6 prefix hash')\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: False is not true : Distinct opt-out was discarded as duplicate by A6 prefix hash\n"
+    }
+  ]
+}

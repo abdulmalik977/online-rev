@@ -4,14 +4,14 @@ title: "Outreach sequence, compliance kit and reply handling rules"
 owner: "claude"
 status: "done"
 goal: "Write everything the sending system needs so that Codex can wire it without interpretation: the 3-email sequence with the preview link, CAN-SPAM footer, unsubscribe handling, suppression list rules, sending schedule within DEC-003, and reply-classification rules with canned responses"
-evidence: "sales/outreach.md revision 2 at 7576955; REV-010 final CHANGES; sales/outreach-review-round2.md all 20 cases; sales/qa/task008-rev2-check.py and task008-rev2-results.json; FINAL-REVIEW-TASK-008 pending owner disposition"
+evidence: "DEC-008 owner closure; sales/outreach.md rev2 plus binding section 12 A1-A6; prior REV-009/010 retained; executable findings transferred to TASK-009, no further prose review"
 definition_of_done: "sales/outreach.md with: email 1 (preview), email 2 (day 3 nudge), email 3 (day 10 expiry notice), subject lines (3 variants each for A/B), footer block with physical address placeholder and unsubscribe line, suppression rules (unsubscribe, bounce, reply-negative, role addresses), warm-up schedule for new mailboxes (weeks 1-3), daily caps, reply classes (interested / question / not-now / negative / auto-reply / bounce) each with a canned reply or action, escalation rules to the owner (legal threats, refund requests), and the metrics definitions for the daily report pipeline line"
 success_metric: "Codex PASS via --review confirming every rule is machine-implementable (no ambiguous instruction), and a checklist mapping each CAN-SPAM requirement to the email element that satisfies it"
 attempts: 2
 review_round: 2
 quota_budget: 30
 created: "2026-09-22T19:50:00+00:00"
-updated: "2026-09-23T06:21:53+00:00"
+updated: "2026-09-23T09:12:08+00:00"
 ---
 No sending. Owner still owes SETUP-EMAIL (sending domain + mailboxes); this task removes
 every other blocker so sending can start the day those exist. Reviewer: codex.
