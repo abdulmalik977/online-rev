@@ -1,0 +1,126 @@
+{
+  "reviewed_commit": "7576955",
+  "source_sha256": "3a9ef7397a4764114d3922f4b6b3141ab3cf6ac34d86894d674a4cacbf9d9ae0",
+  "scope": "Keyword/FAQ and two dated calendar probes only; full twenty-row action audit is in outreach-review-round2.md",
+  "text_observations": {
+    "1": {
+      "body": "Yes, interested",
+      "flags": [
+        "INTERESTED"
+      ],
+      "faq_matches": []
+    },
+    "3": {
+      "body": "Can I have a refund?",
+      "flags": [
+        "REFUND",
+        "QUESTION"
+      ],
+      "faq_matches": []
+    },
+    "4": {
+      "body": "Yes, refund please",
+      "flags": [
+        "REFUND"
+      ],
+      "faq_matches": []
+    },
+    "5": {
+      "body": "Stop. My lawyer will contact you.",
+      "flags": [
+        "LEGAL"
+      ],
+      "faq_matches": []
+    },
+    "6": {
+      "body": "Please unsubscribe",
+      "flags": [
+        "OPT_OUT"
+      ],
+      "faq_matches": []
+    },
+    "7": {
+      "body": "Not now",
+      "flags": [
+        "NOT_NOW"
+      ],
+      "faq_matches": []
+    },
+    "8": {
+      "body": "Not interested right now",
+      "flags": [
+        "NEGATIVE",
+        "INTERESTED"
+      ],
+      "faq_matches": []
+    },
+    "9": {
+      "body": "I saw it yesterday",
+      "flags": [],
+      "faq_matches": []
+    },
+    "10": {
+      "body": "Can you show my monthly analytics report?",
+      "flags": [
+        "QUESTION"
+      ],
+      "faq_matches": [
+        "contract"
+      ]
+    },
+    "11": {
+      "body": "I am back from out of office; how much?",
+      "flags": [
+        "QUESTION"
+      ],
+      "faq_matches": [
+        "price"
+      ]
+    },
+    "extra_opt_out_and_interest": {
+      "body": "Unsubscribe. I was interested.",
+      "flags": [
+        "OPT_OUT",
+        "INTERESTED"
+      ],
+      "faq_matches": []
+    },
+    "extra_opt_out_and_refund": {
+      "body": "Unsubscribe. Refund please.",
+      "flags": [
+        "OPT_OUT",
+        "REFUND"
+      ],
+      "faq_matches": []
+    },
+    "extra_plain_negative": {
+      "body": "Not interested",
+      "flags": [
+        "NEGATIVE",
+        "INTERESTED"
+      ],
+      "faq_matches": []
+    }
+  },
+  "fixture_18": [
+    {
+      "holidays": [],
+      "candidate_utc": "2026-10-01T13:30:00+00:00",
+      "cutoff_utc": "2026-10-06T00:00:00+00:00",
+      "send": true
+    },
+    {
+      "holidays": [
+        "2026-10-01"
+      ],
+      "candidate_utc": "2026-10-06T13:30:00+00:00",
+      "cutoff_utc": "2026-10-06T00:00:00+00:00",
+      "send": false
+    }
+  ],
+  "complaint_pause": {
+    "max_accepted_sends_per_mailbox_day": 40,
+    "minimum_denominator": 100,
+    "reachable": false
+  }
+}
