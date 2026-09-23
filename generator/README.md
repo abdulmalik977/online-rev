@@ -1,4 +1,4 @@
-# Houston website concept generator — TASK-006, sessions 1?2/3
+# Houston website concept generator - TASK-006, session 3/3 blocked
 
 Portable local v1, Python 3.11+, standard library only. No accounts or purchases.
 Ten real businesses, three deterministic styles, original artwork, escaped factual
@@ -42,9 +42,10 @@ Hours, address, certification claims and review counts remain absent, not invent
 `deploy.py` currently prepares an allowlisted ZIP only. It excludes audit JSON and
 rejects unexpected files, symlinks and expired live builds. **Nothing is published**.
 GitHub Pages is not the chosen commercial host: its restrictions conflict with the
-proposed sales previews; REV-007 records the evidence. Choose an eligible host after
-offer correction, then upload the archive as a full replacement and verify all ten
-URLs. Do not upload the repository root. No provider integration was invented here.
+proposed sales previews; REV-007 records the evidence. Netlify Free was selected in session 3 after
+checking commercial eligibility; account access is still missing. The remaining
+full-replacement publish and verification steps are in hosting-handoff.md.
+Do not upload the repository root. No authenticated provider call has occurred.
 
 Expiry JS hides the page at the UTC deadline as a convenience; it is **not** access
 control or deletion. A rebuild at/after expiry now emits **no preview directories** and removes
@@ -53,10 +54,12 @@ purge caches as supported. Until scheduled deployment/removal is working, do not
 promise customers that static content automatically disappears. `noindex` is a
 crawler request, not privacy protection.
 
-Remaining session budget: **one session (3/3)** for eligible-host deployment and
-remote expiry verification. Session 2 completed mobile QA, source corrections and
-the active/expiry replacement bundle. TASK-006 is not ready for Claude PASS until ten live URLs,
-the Maps check, the agreed content spec and expiry deployment are actually verified.
+Session 3/3 selected Netlify Free and audited a fresh publication/removal bundle.
+**Deployment is blocked** on owner account access and an expiry execution path;
+no fourth session is authorized automatically. See [hosting handoff](hosting-handoff.md)
+and [session 3 results](session-3-results.json). TASK-006 is not ready for Claude PASS
+until ten live URLs, the Maps check, the agreed content spec and expiry deployment
+are actually verified. Session 2 mobile/source evidence remains valid; no live result is claimed.
 
 
 ## Session 2 expiry handoff

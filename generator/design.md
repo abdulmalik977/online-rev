@@ -18,3 +18,6 @@
 
 ## Session 2 plan (before edits)
 Preserve original preview dates. Prepare both active and post-expiry archives from the same input; the expiry tree omits all preview directories rather than replacing them with branded placeholders. Ship a dated removal manifest separately from public files. Remote replacement/cache verification belongs to session 3, not a local deletion claim. Recheck missing phone sources and mobile layouts at 320/390/430 px, including all styles.
+
+## Session 3 plan (before publication work)
+Select Netlify Free using current first-party commercial-use and credit-plan evidence. Preserve the 2026-09-22 preview date, regenerate and audit the active/expiry ZIP pair, and publish only to a dedicated owner-controlled site after account access is available. Verify hosted headers, ten live paths, an expiry rehearsal and the scheduled replacement/old-deploy removal path. Do not substitute a ZIP or local HTTP test for remote evidence. No new infrastructure, purchases, outreach, fourth session or TASK-005 collection. If account/scheduler access remains missing, record a bounded blocked handoff rather than fabricate live URLs.

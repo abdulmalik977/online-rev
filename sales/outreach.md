@@ -6,6 +6,8 @@ Placeholders, all read from one config file (`company/config.json`, created in T
 
 ## 1. Sequence (3 emails, plain text, no attachments, no images, no tracking pixels)
 
+> Codex review: **needs clarification ? R04, R08, R11**. See [round-1 evidence and required decisions](outreach-review.md).
+
 Timing is in US Central business days; sends only Tue–Thu 08:30–11:30 and 13:30–16:00 Central (windows chosen for owner-operators; A/B later).
 
 **Email 1 — day 0 (preview)**
@@ -68,6 +70,8 @@ Rules: one prospect = one thread (email 2 and 3 are replies to email 1's Message
 
 ## 2. Compliance mapping
 
+> Codex review: **needs clarification ? R07, R12**. See [round-1 evidence and required decisions](outreach-review.md).
+
 | Requirement | Satisfied by |
 |---|---|
 | CAN-SPAM: accurate header/from/reply-to | From: `{COMPANY} <hello@{SENDING_DOMAIN}>`; Reply-To same mailbox; no display-name impersonation |
@@ -82,6 +86,8 @@ Rules: one prospect = one thread (email 2 and 3 are replies to email 1's Message
 
 ## 3. Suppression list (`sales/suppression.csv`, columns: `email,domain,reason,added_at,source`)
 
+> Codex review: **needs clarification ? R02, R05, R06**. See [round-1 evidence and required decisions](outreach-review.md).
+
 Add and never send again when any of these occur:
 - `unsubscribe`: opt-out page hit or reply containing "unsubscribe", "remove", "stop", "opt out", "take me off" (case-insensitive) → suppress **email and domain** immediately.
 - `bounce_hard`: 5xx bounce → suppress email.
@@ -95,6 +101,8 @@ The sending script checks the suppression list **at send time**, not at scheduli
 
 ## 4. Sending capacity and warm-up (DEC-003: 3–5 mailboxes, ≤40/mailbox/day)
 
+> Codex review: **needs clarification ? R04, R06, R07**. See [round-1 evidence and required decisions](outreach-review.md).
+
 - Separate sending domain from the company domain; SPF, DKIM, DMARC (`p=quarantine`) set before the first send; a mailbox is not used until its DNS checks pass.
 - Warm-up per new mailbox: week 1 ≤10/day, week 2 ≤20/day, week 3 ≤30/day, week 4+ ≤40/day. During weeks 1–2, at least half the volume is to the other company mailboxes (replies exchanged), not prospects.
 - Daily unique-prospect capacity at full warm-up with 5 mailboxes: 200 sends/day ≈ 70–100 new prospects/day once follow-ups are counted (each prospect consumes up to 3 sends over 10 days).
@@ -102,6 +110,8 @@ The sending script checks the suppression list **at send time**, not at scheduli
 - All sends are logged: prospect id, mailbox, email number, subject variant, Message-ID, timestamp.
 
 ## 5. Reply handling (classification runs on every inbound to the sending mailboxes)
+
+> Codex review: **needs clarification ? R01, R02, R03, R08, R09**. See [round-1 evidence and required decisions](outreach-review.md).
 
 Classes, detection rule, action. When two classes match, the earlier row wins.
 
@@ -120,6 +130,8 @@ Owner escalation = line in `approvals/pending.md` with the thread link and a dra
 
 ## 6. FAQ answers (canned, verbatim)
 
+> Codex review: **needs clarification ? R08**. See [round-1 evidence and required decisions](outreach-review.md).
+
 - **Domain:** "Yes, it runs on your existing domain. After you order we send a one-page instruction for your DNS provider; until then the site is live on a subdomain of ours."
 - **Changes:** "Email us the change. Up to 5 requests a month are included (each up to about 30 minutes of work), done within 2 business days."
 - **Contract:** "Month to month. Cancel anytime from your receipt email; the site stays up to the end of the paid month and you get a zip export."
@@ -130,6 +142,8 @@ Owner escalation = line in `approvals/pending.md` with the thread link and a dra
 
 ## 7. Metrics (feed the daily report "Pipeline" line)
 
+> Codex review: **needs clarification ? R10**. See [round-1 evidence and required decisions](outreach-review.md).
+
 - `emails_sent`: sends accepted by the SMTP server (not scheduled).
 - `unique_prospects_contacted`: prospects with ≥1 accepted send.
 - `replies`: inbound classified as anything except `bounce` and `auto_reply`.
@@ -139,6 +153,8 @@ Owner escalation = line in `approvals/pending.md` with the thread link and a dra
 - Rates reported per unique prospect: reply rate, positive rate, paid rate. DEC-007 checkpoint at day 30 uses these definitions.
 
 ## 8. Go-live checklist (all must be true before the first send)
+
+> Codex review: **needs clarification ? R11**. See [round-1 evidence and required decisions](outreach-review.md).
 
 1. SETUP-EMAIL resolved: sending domain, 3–5 mailboxes, SPF/DKIM/DMARC passing.
 2. `company/config.json` filled: company name, postal address, unsubscribe URL live (TASK-007).

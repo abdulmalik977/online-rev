@@ -1,0 +1,72 @@
+{
+  "session": 3,
+  "session_limit": 3,
+  "remaining_sessions": 0,
+  "checked_at": "2026-09-23T05:54:11+00:00",
+  "status": "blocked",
+  "selected_host": "Netlify Free; actual account/team plan unverified",
+  "hosting_access_available": false,
+  "hosting_authenticated_requests": 0,
+  "connected_browser_error": "CryptUnprotectData failed:2148073483",
+  "scheduler_configured": false,
+  "published": false,
+  "live_preview_count": 0,
+  "live_urls": [],
+  "remote_expiry_verified": false,
+  "maps_checked": 0,
+  "outreach_sent": 0,
+  "archive_checks": {
+    "active.zip": {
+      "files": 16,
+      "sha256_verified": true,
+      "allowlist_verified": true,
+      "archive_integrity_passed": true,
+      "no_store_noindex_headers_file_present": true
+    },
+    "expiry.zip": {
+      "files": 6,
+      "sha256_verified": true,
+      "allowlist_verified": true,
+      "archive_integrity_passed": true,
+      "no_store_noindex_headers_file_present": true
+    }
+  },
+  "expiry_manifest": {
+    "schema_version": 1,
+    "prepared_on": "2026-09-23",
+    "preview_date": "2026-09-22",
+    "expires_at": "2026-10-06T00:00:00Z",
+    "input_sha256": "bb7287c384c8b52fde39e0a70a8afe3fcb378f28cf2be6185363ef232e0e67af",
+    "archive_sha256": {
+      "active.zip": "f3924a5f7b2e1ec797950b36314d9c8726a1022e6c1553f757e4cf09a7cb6b77",
+      "expiry.zip": "100da52e917daf73cd361c9254ecae0e66727e069d1e1727a65dc1e9e8bea955"
+    },
+    "active_count": 10,
+    "expired_count": 0,
+    "remove_paths": [
+      "/previews/nick-s-plumbing-air-conditioning-e70bcd39/",
+      "/previews/abacus-plumbing-air-conditioning-electrical-87277293/",
+      "/previews/lucky-s-plumbing-7e06a4be/",
+      "/previews/texas-quality-plumbing-b176105a/",
+      "/previews/wedgeworth-plumbing-a4fafdf1/",
+      "/previews/mission-air-conditioning-plumbing-c37fb587/",
+      "/previews/village-plumbing-air-electric-a4e7849a/",
+      "/previews/john-moore-services-661db278/",
+      "/previews/gei-plumbing-services-370801c2/",
+      "/previews/aqueduct-plumbing-company-d559a836/"
+    ],
+    "deployment_mode": "replace_entire_site_tree_not_merge",
+    "published": false,
+    "remote_expiry_verified": false,
+    "acceptance": [
+      "At deadline replace active site with expiry.zip",
+      "All remove_paths return HTTP 404 or 410, not a SPA 200 fallback",
+      "No business name, phone, source or checkout remains in public tree",
+      "Verify no-store headers and purge earlier cached active URLs",
+      "Disable old deployment URLs or remove the previous deployment",
+      "Record scheduler result, ten URL statuses and cache checks"
+    ]
+  },
+  "prior_validation": "Session 2: 11 tests passed; 40 browser layout checks passed. Not rerun as no executable source changed this session.",
+  "evidence": "generator/hosting-handoff.md"
+}
