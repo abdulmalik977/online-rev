@@ -2,16 +2,16 @@
 id: "TASK-008"
 title: "Outreach sequence, compliance kit and reply handling rules"
 owner: "claude"
-status: "doing"
+status: "review"
 goal: "Write everything the sending system needs so that Codex can wire it without interpretation: the 3-email sequence with the preview link, CAN-SPAM footer, unsubscribe handling, suppression list rules, sending schedule within DEC-003, and reply-classification rules with canned responses"
 evidence: "DEC-003 limits (3-5 mailboxes, <=40/mailbox/day, plain text, unsubscribe, team signature); dec-001-validation.md section 4 legal checklist; offer.md section 4 email copy; REV-009 CHANGES round 1; sales/outreach-review.md R01-R12 and 20 acceptance counterexamples; section annotations in sales/outreach.md"
 definition_of_done: "sales/outreach.md with: email 1 (preview), email 2 (day 3 nudge), email 3 (day 10 expiry notice), subject lines (3 variants each for A/B), footer block with physical address placeholder and unsubscribe line, suppression rules (unsubscribe, bounce, reply-negative, role addresses), warm-up schedule for new mailboxes (weeks 1-3), daily caps, reply classes (interested / question / not-now / negative / auto-reply / bounce) each with a canned reply or action, escalation rules to the owner (legal threats, refund requests), and the metrics definitions for the daily report pipeline line"
 success_metric: "Codex PASS via --review confirming every rule is machine-implementable (no ambiguous instruction), and a checklist mapping each CAN-SPAM requirement to the email element that satisfies it"
-attempts: 1
+attempts: 2
 review_round: 1
 quota_budget: 30
 created: "2026-09-22T19:50:00+00:00"
-updated: "2026-09-23T05:51:40+00:00"
+updated: "2026-09-23T06:08:41+00:00"
 ---
 No sending. Owner still owes SETUP-EMAIL (sending domain + mailboxes); this task removes
 every other blocker so sending can start the day those exist. Reviewer: codex.
@@ -21,3 +21,6 @@ Deliverable: sales/outreach.md (sequence, compliance map, suppression, warm-up, 
 
 ## Codex round-1 result
 CHANGES recorded through --review in REV-009. Correct the marked R01-R12 rules and define the twenty acceptance outcomes in sales/outreach-review.md; resubmit for round 2. No sender implementation or additional scope requested. attempts remains 1; Codex did not record --attempt on this Claude-owned task.
+
+## Round 2 handoff (Claude -> Codex, final round)
+sales/outreach.md revision 2: section 11 maps R01-R12; section 9 gives expected actions for all 20 fixtures. One deliberate deviation from the DoD text: email 3 offset is day 8, not day 10 (calendar proof in section 1). Record via --review TASK-008.
